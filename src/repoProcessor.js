@@ -17,9 +17,12 @@ async function generateRepoSummary(repoUrl) {
             .replace('https://github.com/', '')
             .replace('.git', '');
 
+        // Extract repo name from URL
+        const repoName = repoPath.split('/').pop();
+
         // Download the repository
         await downloadRepo(repoPath, tmpDir.path);
-        console.log('Repository summary downloaded successfully');
+        console.log('Repository downloaded successfully');
 
         let content = `Repository: ${repoUrl}\n\n`;
         const MAX_CHARACTERS = 150000;
@@ -73,6 +76,23 @@ async function generateRepoSummary(repoUrl) {
         }
 
         await processDirectory(tmpDir.path);
+
+        // Create repos directory if it doesn't exist
+        const reposDir = path.join(process.cwd(), 'repos');
+        try {
+            await fs.mkdir(reposDir, { recursive: true });
+        } catch (err) {
+            if (err.code !== 'EEXIST') throw err;
+        }
+
+        // Generate unique filename with timestamp
+        const timestamp = Date.now();
+        const outputPath = path.join(reposDir, `${repoName}_${timestamp}.txt`);
+
+        // Write the content to file
+        await fs.writeFile(outputPath, content, 'utf8');
+        console.log(`Repository summary saved to: ${outputPath}`);
+
         return content;
     } catch (error) {
         throw new Error(`Failed to process repository: ${error.message}`);

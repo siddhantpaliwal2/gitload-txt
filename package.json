@@ -1,10 +1,10 @@
 {
   "name": "gitload-txt",
-  "version": "1.0.1",
+  "version": "1.0.7",
   "description": "Generate summaries of GitHub repositories including file contents",
   "main": "src/index.js",
   "bin": {
-    "repo-summarize": "./bin/gitload.js"
+    "gitload": "./bin/gitload.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,11 +16,11 @@
     "files",
     "content"
   ],
-  "author": "Your Name",
+  "author": "Siddhant Paliwal",
   "license": "MIT",
   "dependencies": {
     "download-git-repo": "^3.0.2",
     "isbinaryfile": "^5.0.0",
     "tmp-promise": "^3.0.3"
   }
-} 
+}

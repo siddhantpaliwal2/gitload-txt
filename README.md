@@ -17,7 +17,7 @@ Generate enriched, AI-ready summaries of GitHub repositories as text files. Perf
 ## Installation
 
 ```bash
-npm install -g gitload-txt
+npm install gitload-txt
 ```
 
 ## Usage
