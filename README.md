@@ -173,8 +173,6 @@ See [CHANGELOG.md](CHANGELOG.md) for a list of changes and migration guides.
 
 ## Roadmap
 
-- [ ] Support for private repositories
-- [ ] Integration with more AI IDEs
 - [ ] Custom summary templates
-- [ ] Batch processing improvements
+- [ ] pip package
 - [ ] Enhanced code analysis features
