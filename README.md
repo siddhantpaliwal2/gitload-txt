@@ -1,6 +1,6 @@
 # gitload-txt
 
-Generate enriched, AI-ready summaries of GitHub repositories as text files. Perfect for use with AI-powered IDEs like Cursor, CodePilot, and other development tools.
+Generate enriched, AI-ready summaries of GitHub repositories as text files. Perfect for use with AI-powered IDEs like Cursor and other development tools.
 
 [![npm version](https://img.shields.io/npm/v/gitload-txt.svg)](https://www.npmjs.com/package/gitload-txt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -27,29 +27,7 @@ Basic usage:
 gitload https://github.com/username/repository
 ```
 
-This will create a `repository-summary.txt` file in your current directory with an enriched summary of the repository.
-
-### Options
-
-```bash
-# Specify output directory
-gitload https://github.com/username/repository --out ./summaries
-
-# Include specific folders only
-gitload https://github.com/username/repository --include src,docs
-
-# Exclude certain patterns
-gitload https://github.com/username/repository --exclude "*.test.js,*.spec.js"
-
-# Generate multiple summaries at once
-gitload https://github.com/username/repository1 https://github.com/username/repository2
-
-# Generate tags automatically
-gitload https://github.com/username/repository --tags
-
-# Specify summary depth
-gitload https://github.com/username/repository --depth detailed
-```
+This will create a `repository-name.txt` file in a repos folder in your current directory with an enriched summary of the repository.
 
 ### Output Format
 
@@ -116,8 +94,8 @@ TAGS
 
 ### Cursor
 1. Import the generated text file into your Cursor workspace
-2. Use `/ask` commands to query the repository structure
-3. Generate code based on the architectural patterns
+2. Use @repository-name.txt to query the summary
+3. Generate code based on the repository
 
 ### Other AI IDEs
 The generated summaries are compatible with most AI-powered development tools that accept context in text format.
@@ -187,8 +165,7 @@ Created and maintained by [Your Name](https://github.com/username)
 ## Support
 
 - 📫 For bugs and feature requests, please [create an issue](https://github.com/username/gitload-txt/issues)
-- 💬 For questions and discussions, join our [Discord community](https://discord.gg/gitloadtxt)
-- 📚 Check out our [Wiki](https://github.com/username/gitload-txt/wiki) for additional documentation
+- 💬 For questions and discussions, please [email me](mailto:paliwal.siddhant@gmail.com)
 
 ## Changelog
 
