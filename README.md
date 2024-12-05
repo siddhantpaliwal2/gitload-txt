@@ -160,7 +160,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Credits
 
-Created and maintained by [Your Name](https://github.com/username)
+Created and maintained by [Siddhant Paliwal](https://github.com/siddhantpaliwal2)
 
 ## Support
 
