@@ -1,0 +1,3087 @@
+Repository: https://github.com/aidenybai/react-scan
+
+
+--- File: README.md ---
+
+# <img src="https://github.com/aidenybai/react-scan/blob/main/.github/assets/logo.svg" width="30" height="30" align="center" /> React Scan
+
+React Scan automatically detects performance issues in your React app.
+
+Previously, tools like:
+
+- [`<Profiler />`](https://react.dev/reference/react/Profiler) required lots of manual changes
+- [Why Did You Render?](https://github.com/welldone-software/why-did-you-render) lacked simple visual cues
+- [React Devtools](https://legacy.reactjs.org/blog/2018/09/10/introducing-the-react-profiler.html) didn't have a simple, portable, and programmatic API
+
+React Scan attempts to solve these problems:
+
+- It requires no code changes – just drop it in
+- It highlights exactly the components you need to optimize
+- Use it via script tag, npm, CLI, you name it!
+
+Trusted by engineering teams at:
+
+Airbnb&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://polaris.shopify.com/"><img src="https://raw.githubusercontent.com/aidenybai/react-scan/refs/heads/main/.github/assets/shopify-logo.png" height="30" align="center" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://www.faire.com/"><img src="https://raw.githubusercontent.com/aidenybai/react-scan/refs/heads/main/.github/assets/faire-logo.svg" height="20" align="center" /></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="https://perplexity.com/"><img src="https://raw.githubusercontent.com/aidenybai/react-scan/refs/heads/main/.github/assets/perplexity-logo.png" height="30" align="center" /></a>
+
+### [**Try it out! →**](https://react-scan.million.dev)
+
+![React Scan in action](https://raw.githubusercontent.com/aidenybai/react-scan/refs/heads/main/.github/assets/demo.gif?token=GHSAT0AAAAAAB4IOFACRC6P6E45TB2FPYFCZZV2AYA)
+
+> [!IMPORTANT]
+> Looking for a more advanced version? Check out [Million Lint](https://million.dev)!
+
+## Install
+
+> Looking for [React Native](https://github.com/aidenybai/react-scan/pull/23)?
+
+The fastest way to get started is via CLI. This will spin up an isolated browser instance which you can interact or use React Scan with.
+
+```bash
+npx react-scan@latest http://localhost:3000
+# you can technically scan ANY website on the web:
+# npx react-scan@latest https://react.dev
+```
+
+You can add it to your existing dev process as well. Here's an example for Next.js:
+
+```json
+{
+  "scripts": {
+    "dev": "next dev",
+    "scan": "next dev & npx react-scan@latest localhost:3000"
+  }
+}
+```
+
+If you don't want to use a separate browser and you have access to your local codebase, then add this script to your app:
+
+```html
+<!-- import this BEFORE any scripts -->
+<script src="https://unpkg.com/react-scan/dist/auto.global.js"></script>
+```
+
+Examples:
+
+<details>
+<summary><b>Next.js (pages)</b></summary>
+
+<br />
+
+Add the script tag to your `pages/_document.tsx`:
+
+```jsx
+import { Html, Head, Main, NextScript } from 'next/document';
+
+export default function Document() {
+  return (
+    <Html lang="en">
+      <Head>
+        <script src="https://unpkg.com/react-scan/dist/auto.global.js"></script>
+
+        {/* rest of your scripts go under */}
+      </Head>
+      <body>
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
+  );
+}
+```
+
+</details>
+
+<details>
+<summary><b>Next.js (app)</b></summary>
+
+<br />
+
+Add the script tag to your `app/layout.tsx`:
+
+```jsx
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <html lang="en">
+      <head>
+        <script src="https://unpkg.com/react-scan/dist/auto.global.js" async />
+        {/* rest of your scripts go under */}
+      </head>
+      <body>{children}</body>
+    </html>
+  )
+}
+```
+
+</details>
+
+<details>
+<summary><b>Vite / Create React App</b></summary>
+
+<br />
+
+Add the script tag to your `index.html`:
+
+```html
+<!doctype html>
+<html lang="en">
+  <head>
+    <script src="https://unpkg.com/react-scan/dist/auto.global.js"></script>
+
+    <!-- rest of your scripts go under -->
+  </head>
+  <body>
+    <!-- ... -->
+  </body>
+</html>
+```
+
+</details>
+
+## API Reference
+
+If you need a programmatic API to debug further, install via NPM instead:
+
+```bash
+npm install react-scan
+```
+
+Then, in your app, import this **BEFORE** `react`. This must run in a client context (e.g. not in a server component):
+
+```js
+import { scan } from 'react-scan'; // import this BEFORE react
+import React from 'react';
+
+if (typeof window !== 'undefined') {
+  scan({
+    enabled: true,
+    log: true, // logs render info to console (default: false)
+  });
+}
+```
+
+## API Reference
+
+<details>
+<summary><code>Options</code></summary>
+
+<br />
+
+```tsx
+export interface Options {
+  /**
+   * Enable/disable scanning
+   *
+   * Please use the recommended way:
+   * enabled: process.env.NODE_ENV === 'development',
+   *
+   * @default true
+   */
+  enabled?: boolean;
+  /**
+   * Include children of a component applied with withScan
+   *
+   * @default true
+   */
+  includeChildren?: boolean;
+
+  /**
+   * Enable/disable geiger sound
+   *
+   * @default true
+   */
+  playSound?: boolean;
+
+  /**
+   * Log renders to the console
+   *
+   * @default false
+   */
+  log?: boolean;
+
+  /**
+   * Show toolbar bar
+   *
+   * @default true
+   */
+  showToolbar?: boolean;
+
+  /**
+   * Render count threshold, only show
+   * when a component renders more than this
+   *
+   * @default 0
+   */
+  renderCountThreshold?: number;
+
+  /**
+   * Clear aggregated fibers after this time in milliseconds
+   *
+   * @default 5000
+   */
+  resetCountTimeout?: number;
+
+  /**
+   * Maximum number of renders for red indicator
+   *
+   * @default 20
+   */
+  maxRenders?: number;
+
+  /**
+   * Report data to getReport()
+   *
+   * @default false
+   */
+  report?: boolean;
+
+  /**
+   * Always show labels
+   *
+   * @default false
+   */
+  alwaysShowLabels?: boolean;
+
+  /**
+   * Animation speed
+   *
+   * @default "fast"
+   */
+  animationSpeed?: 'slow' | 'fast' | 'off';
+
+  onCommitStart?: () => void;
+  onRender?: (fiber: Fiber, render: Render) => void;
+  onCommitFinish?: () => void;
+  onPaintStart?: (outlines: PendingOutline[]) => void;
+  onPaintFinish?: (outlines: PendingOutline[]) => void;
+}
+```
+
+</details>
+
+- `scan(options: Options)`: Imperative API to start scanning
+- `useScan(options: Options)`: Hook API to start scanning
+- `withScan(Component, options: Options)`: Whitelist a specific component, do not scan other components
+- `getReport()`: Get a report of all the renders
+- `setOptions(options: Options): void`: Set options at runtime
+- `getOptions()`: Get the current options
+- `onRender(Component, onRender: (fiber: Fiber, render: Render) => void)`: Hook into a specific component's renders
+- `getRenderInfo(Component)`: Get the render info for a specific component
+
+## Why React Scan?
+
+React can be tricky to optimize.
+
+The issue is that component props are compared by reference, not value. This is intentional – this way rendering can be cheap to run.
+
+However, this makes it easy to accidentally cause unnecessary renders, making the app slow. Even in production apps, with hundreds of engineers, can't fully optimize their apps (see [GitHub](https://github.com/aidenybai/react-scan/blob/main/.github/assets/github.mp4), [Twitter](https://github.com/aidenybai/react-scan/blob/main/.github/assets/twitter.mp4), and [Instagram](https://github.com/aidenybai/react-scan/blob/main/.github/assets/instagram.mp4)).
+
+This often comes down to props that update in reference, like callbacks or object values. For example, the `onClick` function and `style` object are re-created on every render, causing `ExpensiveComponent` to slow down the app:
+
+```jsx
+<ExpensiveComponent onClick={() => alert('hi')} style={{ color: 'purple' }} />
+```
+
+React Scan helps you identify these issues by automatically detecting and highlighting renders that cause performance issues. Now, instead of guessing, you can see exactly which components you need to fix.
+
+> Want to automatically fix these issues? Check out [Million Lint](https://million.dev)!
+
+### FAQ
+
+**Q: Why this instead of React Devtools?**
+
+React Devtools aims to be a general purpose tool for React. However, I deal with React performance issues every day, and React Devtools doesn't fix my problems well. There's a lot of noise (no obvious distinction between unnecessary and necessary renders), and there's no programmatic API. If it sounds like you have the same problems, then React Scan may be a better choice.
+
+Also, some personal complaints about React Devtools' highlight feature:
+
+- React Devtools "batches" paints, so if a component renders too fast, it will lag behind and only show 1 every second or so
+- When you scroll/resize the boxes don't update position
+- No count of how many renders there are
+- I don't know what the bad/slow renders are without inspecting
+- The menu is hidden away so it's annoying to turn on/off, user experience should be specifically tuned for debugging performance, instead of hidden behind a profiler/component tree
+- No programmatic API
+- It's stuck in a chrome extension, I want to run it anywhere on the web
+- It looks subjectively ugly (lines look fuzzy, feels sluggish)
+- I'm more ambitious with react-scan (see our roadmap)
+
+**Q: React Native wen?**
+
+Soon :)
+
+**Q: Chrome Extension wen?**
+
+Soon :)
+
+## Resources & Contributing Back
+
+Want to try it out? Check the [our demo](https://react-scan.million.dev).
+
+Looking to contribute back? Check the [Contributing Guide](https://github.com/aidenybai/react-scan/blob/main/.github/CONTRIBUTING.md) out.
+
+Want to talk to the community? Hop in our [Discord](https://discord.gg/X9yFbcV2rF) and share your ideas and what you've build with React Scan.
+
+Find a bug? Head over to our [issue tracker](https://github.com/aidenybai/react-scan/issues) and we'll do our best to help. We love pull requests, too!
+
+We expect all contributors to abide by the terms of our [Code of Conduct](https://github.com/aidenybai/react-scan/blob/main/.github/CODE_OF_CONDUCT.md).
+
+[**→ Start contributing on GitHub**](https://github.com/aidenybai/react-scan/blob/main/.github/CONTRIBUTING.md)
+
+## Roadmap
+
+- [x] Scan only for unnecessary renders ("unstable" props)
+- [x] Scan API (`withScan`, `scan`)
+- [x] Cleanup config options
+- [x] Chrome extension (h/t [@biw](https://github.com/biw))
+- [x] Mode to highlight long tasks
+- [x] Add context updates
+- [x] Expose primitives / internals for advanced use cases
+- [x] More explicit options override API (start log at certain area, stop log, etc.)
+- [x] Don't show label if no reconciliation occurred ("client renders" in DevTools)
+- [x] "global" counter using `sessionStorage`, aggregate count stats instead of immediate replacement
+- [x] Give a general report of the app's performance
+- [x] Select areas of the screen to scan
+- [x] Report should include all renders
+- [x] heatmap decay (stacked renders will be more intense)
+- [x] Investigate components (UI allowlist)
+- [ ] Offscreen canvas on worker thread
+- [ ] UI for turning on/off options
+- [ ] “PageSpeed insights” for React
+- [ ] CLI
+- [ ] React Native support
+- [ ] Cleanup API reference
+- [ ] Name / explain the actual problem, docs
+- [ ] Simple FPS counter
+- [ ] [Runtime version guarding](https://github.com/lahmatiy/react-render-tracker/blob/229ad0e9c28853615300724d5dc86c140f250f60/src/publisher/react-integration/utils/getInternalReactConstants.ts#L28)
+- [ ] React as peer dependency (lock version to range)
+- [ ] Add a funny mascot, like the ["Stop I'm Changing" dude](https://www.youtube.com/shorts/FwOZdX7bDKI?app=desktop)
+
+## Acknowledgments
+
+React Scan takes inspiration from the following projects:
+
+- [React Devtools](https://react.dev/learn/react-developer-tools) for the initial idea of [highlighting renders](https://medium.com/dev-proto/highlight-react-components-updates-1b2832f2ce48). We chose to diverge from this to provide a [better developer experience](https://x.com/aidenybai/status/1857122670929969551)
+- [Million Lint](https://million.dev) for scanning and linting approaches
+- [Why Did You Render?](https://github.com/welldone-software/why-did-you-render) for the concept of hijacking internals to detect unnecessary renders caused by "unstable" props
+
+## License
+
+React Scan is [MIT-licensed](LICENSE) open-source software by Aiden Bai, [Million Software, Inc.](https://million.dev), and [contributors](https://github.com/aidenybai/react-scan/graphs/contributors):
+
+
+
+--- File: .eslintrc.js ---
+
+const { resolve } = require('node:path');
+
+const project = resolve(__dirname, 'tsconfig.json');
+
+module.exports = {
+  root: true,
+  extends: [
+    require.resolve('@vercel/style-guide/eslint/node'),
+    require.resolve('@vercel/style-guide/eslint/browser'),
+    require.resolve('@vercel/style-guide/eslint/typescript'),
+  ],
+  ignorePatterns: ['**/dist/*', '**/test/*'],
+  parserOptions: {
+    project,
+  },
+  rules: {
+    '@typescript-eslint/explicit-function-return-type': 'off',
+    'import/no-default-export': 'off',
+    'no-bitwise': 'off',
+    '@typescript-eslint/prefer-optional-chain': 'off',
+    '@typescript-eslint/consistent-indexed-object-style': 'off',
+    'import/no-extraneous-dependencies': 'off',
+    '@typescript-eslint/no-unsafe-call': 'off',
+    '@typescript-eslint/no-unsafe-return': 'off',
+    '@typescript-eslint/no-unsafe-argument': 'off',
+    '@typescript-eslint/no-explicit-any': 'off',
+    '@typescript-eslint/no-unsafe-assignment': 'off',
+    '@typescript-eslint/no-unsafe-member-access': 'off',
+    '@typescript-eslint/no-shadow': 'off',
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-loop-func': 'off',
+    'eslint-comments/disable-enable-pair': 'off',
+    'import/no-cycle': 'off',
+    'no-nested-ternary': 'off',
+    'no-param-reassign': 'off',
+    'tsdoc/syntax': 'off',
+    'eslint-comments/require-description': 'off',
+    'import/no-relative-packages': 'off',
+    '@typescript-eslint/no-unnecessary-condition': 'off',
+    '@typescript-eslint/no-confusing-void-expression': 'off',
+    '@typescript-eslint/require-await': 'off',
+    // '@typescript-eslint/no-floating-promises': ['error'],
+    'import/no-named-as-default': 'off',
+    'no-implicit-coercion': 'off',
+    '@typescript-eslint/no-redundant-type-constituents': 'off',
+    'object-shorthand': 'off',
+    '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
+    'no-useless-return': 'off',
+    'func-names': 'off',
+    '@typescript-eslint/prefer-for-of': 'off',
+    // 'no-implicit-coercion': 'off',
+    '@typescript-eslint/restrict-template-expressions': 'off',
+    '@typescript-eslint/array-type': ['error', { default: 'generic' }],
+  },
+  settings: {
+    'import/resolver': {
+      typescript: {
+        project,
+      },
+    },
+  },
+};
+
+
+
+--- File: .github/CODE_OF_CONDUCT.md ---
+
+# Contributor Covenant Code of Conduct
+
+## Our Pledge
+
+In the interest of fostering an open and welcoming environment, we as
+contributors and maintainers pledge to making participation in our project and
+our community a harassment-free experience for everyone, regardless of age, body
+size, disability, ethnicity, sex characteristics, gender identity and expression,
+level of experience, education, socio-economic status, nationality, personal
+appearance, race, religion, or sexual identity and orientation.
+
+## Our Standards
+
+Examples of behavior that contributes to creating a positive environment
+include:
+
+- Using welcoming and inclusive language
+- Being respectful of differing viewpoints and experiences
+- Gracefully accepting constructive criticism
+- Focusing on what is best for the community
+- Showing empathy towards other community members
+
+Examples of unacceptable behavior by participants include:
+
+- The use of sexualized language or imagery and unwelcome sexual attention or
+  advances
+- Trolling, insulting/derogatory comments, and personal or political attacks
+- Public or private harassment
+- Publishing others' private information, such as a physical or electronic
+  address, without explicit permission
+- Other conduct which could reasonably be considered inappropriate in a
+  professional setting
+
+## Our Responsibilities
+
+Project maintainers are responsible for clarifying the standards of acceptable
+behavior and are expected to take appropriate and fair corrective action in
+response to any instances of unacceptable behavior.
+
+Project maintainers have the right and responsibility to remove, edit, or
+reject comments, commits, code, wiki edits, issues, and other contributions
+that are not aligned to this Code of Conduct, or to ban temporarily or
+permanently any contributor for other behaviors that they deem inappropriate,
+threatening, offensive, or harmful.
+
+## Scope
+
+This Code of Conduct applies both within project spaces and in public spaces
+when an individual is representing the project or its community. Examples of
+representing a project or community include using an official project e-mail
+address, posting via an official social media account, or acting as an appointed
+representative at an online or offline event. Representation of a project may be
+further defined and clarified by project maintainers.
+
+## Enforcement
+
+Instances of abusive, harassing, or otherwise unacceptable behavior may be
+reported by contacting the project team at aiden.bai05@gmail.com. All
+complaints will be reviewed and investigated and will result in a response that
+is deemed necessary and appropriate to the circumstances. The project team is
+obligated to maintain confidentiality with regard to the reporter of an incident.
+Further details of specific enforcement policies may be posted separately.
+
+Project maintainers who do not follow or enforce the Code of Conduct in good
+faith may face temporary or permanent repercussions as determined by other
+members of the project's leadership.
+
+## Attribution
+
+This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org), version 1.4,
+available at https://www.contributor-covenant.org/version/1/4/code-of-conduct.html
+
+For answers to common questions about this code of conduct, see
+https://www.contributor-covenant.org/faq
+
+
+--- File: .github/CONTRIBUTING.md ---
+
+# Contributing Guide
+
+## 1. Setup
+
+```bash
+git clone https://github.com/aidenybai/react-scan.git
+cd react-scan
+pnpm install
+```
+
+## 2. Run dev build
+
+```bash
+pnpm run dev
+```
+
+## 3. Run test environment
+
+```bash
+cd test
+pnpm run dev
+```
+
+Go to http://localhost:5173 to see the test environment.
+
+
+
+--- File: .github/assets/faire-logo.svg ---
+
+<?xml version="1.0" encoding="UTF-8" standalone="no"?> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Layer_1" x="0px" y="0px" width="1024px" height="128px" viewBox="0 0 1024 128" xml:space="preserve"> <image id="image0" width="1024" height="128" x="0" y="0" href="data:image/png;base64,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 OjU1OjQzKzAwOjAwkoNFdQAAAABJRU5ErkJggg=="></image> </svg> 
+
+
+--- File: .github/assets/logo.svg ---
+
+<svg width="844" height="844" viewBox="0 0 844 844" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="1" width="841" height="842" rx="115" fill="#7A68E7" fill-opacity="0.1"/>
+<g clip-path="url(#clip0_1_46)">
+<path d="M422.637 359.088C388.411 359.088 360.666 386.777 360.666 420.933C360.666 455.089 388.411 482.777 422.637 482.777C456.863 482.777 484.608 455.089 484.608 420.933C484.608 386.777 456.863 359.088 422.637 359.088Z" fill="#7A68E7"/>
+<path d="M744.954 421.494C744.954 372.941 699.901 330.357 628.167 302.333C629.125 296.022 629.992 289.779 630.609 283.65C637.684 213.885 620.84 163.532 583.204 141.842C541.095 117.577 481.617 135.189 421.477 183.218C361.337 135.189 301.859 117.577 259.75 141.842C222.114 163.532 205.27 213.885 212.346 283.65C212.962 289.779 213.806 296.044 214.788 302.378C208.808 304.657 202.942 307.072 197.305 309.601C133.262 338.332 98 378.113 98 421.494C98 470.047 143.054 512.63 214.788 540.654C213.806 546.966 212.962 553.208 212.346 559.337C205.27 629.102 222.114 679.455 259.75 701.146C272.69 708.468 287.352 712.212 302.225 711.991C337.875 711.991 379.505 693.262 421.477 659.77C463.427 693.262 505.08 711.991 540.776 711.991C555.648 712.209 570.309 708.465 583.25 701.146C620.886 679.455 637.73 629.102 630.654 559.337C630.038 553.208 629.171 546.966 628.212 540.654C699.946 512.676 745 470.024 745 421.494M540.502 161.755C550.064 161.525 559.517 163.837 567.89 168.454C594.023 183.514 605.754 224.366 600.048 280.528C599.66 284.356 599.204 288.229 598.656 292.126C568.828 283.158 538.285 276.763 507.362 273.01C488.616 248.135 467.771 224.909 445.054 203.587C480.727 176.063 514.209 161.755 540.479 161.755M528.223 483.011C516.679 503.011 504.11 522.403 490.564 541.11C467.603 543.465 444.536 544.636 421.454 544.619C398.38 544.635 375.321 543.464 352.368 541.11C338.858 522.403 326.326 503.01 314.823 483.011C303.28 463.066 292.79 442.532 283.395 421.494C292.79 400.455 303.28 379.922 314.823 359.977C326.308 340.057 338.801 320.734 352.254 302.082C375.249 299.669 398.355 298.468 421.477 298.482C444.551 298.468 467.61 299.64 490.564 301.991C504.062 320.672 516.601 340.025 528.131 359.977C539.665 379.926 550.155 400.46 559.559 421.494C550.155 442.528 539.665 463.061 528.131 483.011M575.262 460.227C582.505 479.944 588.452 500.113 593.064 520.604C573.05 526.833 552.647 531.742 531.988 535.3C539.84 523.483 547.448 511.187 554.812 498.413C562.093 485.79 568.917 473.054 575.353 460.318M378.135 573.988C392.332 574.853 406.824 575.355 421.5 575.355C436.175 575.355 450.76 574.853 464.979 573.988C451.497 590.107 436.973 605.329 421.5 619.556C406.06 605.332 391.574 590.109 378.135 573.988ZM310.989 535.255C290.323 531.713 269.913 526.819 249.89 520.604C254.484 500.146 260.407 480.007 267.624 460.318C273.969 473.054 280.77 485.79 288.165 498.413C295.56 511.035 303.206 523.475 310.989 535.3M267.624 382.647C260.433 363.03 254.525 342.968 249.936 322.588C269.909 316.367 290.264 311.443 310.875 307.847C303.069 319.626 295.423 331.838 288.051 344.575C280.679 357.311 273.946 369.888 267.51 382.647M464.842 268.977C450.646 268.111 436.153 267.61 421.363 267.61C406.695 267.61 392.24 268.066 377.998 268.977C391.437 252.855 405.923 237.633 421.363 223.409C436.842 237.629 451.366 252.852 464.842 268.977ZM554.766 344.575C547.371 331.785 539.726 319.482 531.829 307.664C552.542 311.222 572.998 316.139 593.064 322.383C588.46 342.839 582.536 362.976 575.33 382.67C568.985 369.933 562.161 357.197 554.789 344.597M242.998 280.551C237.223 224.411 249.023 183.537 275.133 168.476C283.509 163.866 292.959 161.555 302.521 161.778C328.791 161.778 362.273 176.086 397.946 203.609C375.214 224.947 354.353 248.188 335.592 273.078C304.678 276.849 274.138 283.221 244.299 292.126C243.774 288.229 243.294 284.379 242.929 280.551M209.949 337.648C213.464 336.129 217.047 334.61 220.699 333.091C227.878 363.327 237.613 392.9 249.799 421.494C237.59 450.143 227.847 479.778 220.676 510.078C162.522 486.269 128.812 453.277 128.812 421.494C128.812 391.373 158.482 360.82 209.949 337.648ZM275.133 674.511C249.023 659.451 237.223 618.576 242.998 562.436C243.363 558.608 243.842 554.758 244.367 550.839C274.195 559.804 304.738 566.199 335.661 569.955C354.412 594.839 375.258 618.079 397.969 639.423C348.237 677.769 302.795 690.414 275.201 674.511M600.025 562.436C605.731 618.599 594 659.451 567.867 674.511C540.296 690.46 494.832 677.769 445.122 639.423C467.826 618.079 488.664 594.838 507.408 569.955C538.331 566.201 568.874 559.806 598.701 550.839C599.249 554.758 599.706 558.608 600.094 562.436M622.415 510.033C615.224 479.75 605.474 450.131 593.27 421.494C605.468 392.84 615.211 363.206 622.392 332.909C680.432 356.718 714.234 389.71 714.234 421.494C714.234 453.277 680.524 486.269 622.369 510.078" fill="#7A68E7"/>
+</g>
+<path d="M21.5 199.5V110.5C21.5 86.8957 30.8768 64.2582 47.5675 47.5675C64.2582 30.8768 86.8957 21.5 110.5 21.5H199.5" stroke="#7A68E7" stroke-width="42.6667" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M644.5 21.5H733.5C757.104 21.5 779.742 30.8768 796.432 47.5675C813.123 64.2582 822.5 86.8957 822.5 110.5V199.5" stroke="#7A68E7" stroke-width="42.6667" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M822.5 644.5V733.5C822.5 757.105 813.123 779.742 796.432 796.433C779.742 813.123 757.104 822.5 733.5 822.5H644.5" stroke="#7A68E7" stroke-width="42.6667" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M199.5 822.5H110.5C86.8957 822.5 64.2582 813.123 47.5675 796.433C30.8768 779.742 21.5 757.105 21.5 733.5V644.5" stroke="#7A68E7" stroke-width="42.6667" stroke-linecap="round" stroke-linejoin="round"/>
+<defs>
+<clipPath id="clip0_1_46">
+<rect width="647" height="581" fill="white" transform="translate(98 131)"/>
+</clipPath>
+</defs>
+</svg>
+
+
+
+--- File: .gitignore ---
+
+node_modules
+.DS_Store
+.env
+dist
+
+
+--- File: .prettierrc.mjs ---
+
+import vercelPrettierConfig from "@vercel/style-guide/prettier";
+
+/** @type {import("prettier").Config} */
+export default {
+  ...vercelPrettierConfig,
+  singleQuote: true,
+  printWidth: 80,
+};
+
+
+
+--- File: package.json ---
+
+{
+  "name": "root",
+  "private": true,
+  "scripts": {
+    "build": "pnpm -r --filter=!extension build",
+    "dev": "pnpm -r --filter=!extension dev",
+    "lint": "pnpm -r --filter=!extension lint",
+    "prettier": "prettier --write packages/*",
+    "eslint:fix": "eslint --fix packages/*"
+  },
+  "devDependencies": {
+    "@vercel/style-guide": "^6.0.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.3.3"
+  }
+}
+
+
+
+--- File: packages/extension/README.md ---
+
+WIP
+
+
+
+--- File: packages/extension/.env.example ---
+
+# Path to the Chromium binary
+# You only need to set this if you're not using Google Chrome
+CHROMIUM_BINARY="/Applications/Brave Browser.app/Contents/MacOS/Brave Browser"
+
+
+
+--- File: packages/extension/.gitignore ---
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Config files
+.webextrc
+.webextrc.*
+
+
+
+--- File: packages/extension/package.json ---
+
+{
+  "name": "react-scanner-extension",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "dotenv -- vite build --watch --mode development"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.281",
+    "@types/react": "^18.0.26",
+    "@types/react-dom": "^18.0.9",
+    "@types/webextension-polyfill": "^0.10.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "dotenv-cli": "^7.4.2",
+    "typescript": "~5.6.3",
+    "vite": "^5.0.0",
+    "vite-plugin-web-extension": "^4.0.0",
+    "webextension-polyfill": "^0.10.0"
+  }
+}
+
+
+
+--- File: packages/extension/public/icon/icon.svg ---
+
+<svg width="844" height="844" viewBox="0 0 844 844" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect x="1" width="841" height="842" rx="115" fill="#7A68E7" fill-opacity="0.1"/>
+<g clip-path="url(#clip0_1_46)">
+<path d="M422.637 359.088C388.411 359.088 360.666 386.777 360.666 420.933C360.666 455.089 388.411 482.777 422.637 482.777C456.863 482.777 484.608 455.089 484.608 420.933C484.608 386.777 456.863 359.088 422.637 359.088Z" fill="#7A68E7"/>
+<path d="M744.954 421.494C744.954 372.941 699.901 330.357 628.167 302.333C629.125 296.022 629.992 289.779 630.609 283.65C637.684 213.885 620.84 163.532 583.204 141.842C541.095 117.577 481.617 135.189 421.477 183.218C361.337 135.189 301.859 117.577 259.75 141.842C222.114 163.532 205.27 213.885 212.346 283.65C212.962 289.779 213.806 296.044 214.788 302.378C208.808 304.657 202.942 307.072 197.305 309.601C133.262 338.332 98 378.113 98 421.494C98 470.047 143.054 512.63 214.788 540.654C213.806 546.966 212.962 553.208 212.346 559.337C205.27 629.102 222.114 679.455 259.75 701.146C272.69 708.468 287.352 712.212 302.225 711.991C337.875 711.991 379.505 693.262 421.477 659.77C463.427 693.262 505.08 711.991 540.776 711.991C555.648 712.209 570.309 708.465 583.25 701.146C620.886 679.455 637.73 629.102 630.654 559.337C630.038 553.208 629.171 546.966 628.212 540.654C699.946 512.676 745 470.024 745 421.494M540.502 161.755C550.064 161.525 559.517 163.837 567.89 168.454C594.023 183.514 605.754 224.366 600.048 280.528C599.66 284.356 599.204 288.229 598.656 292.126C568.828 283.158 538.285 276.763 507.362 273.01C488.616 248.135 467.771 224.909 445.054 203.587C480.727 176.063 514.209 161.755 540.479 161.755M528.223 483.011C516.679 503.011 504.11 522.403 490.564 541.11C467.603 543.465 444.536 544.636 421.454 544.619C398.38 544.635 375.321 543.464 352.368 541.11C338.858 522.403 326.326 503.01 314.823 483.011C303.28 463.066 292.79 442.532 283.395 421.494C292.79 400.455 303.28 379.922 314.823 359.977C326.308 340.057 338.801 320.734 352.254 302.082C375.249 299.669 398.355 298.468 421.477 298.482C444.551 298.468 467.61 299.64 490.564 301.991C504.062 320.672 516.601 340.025 528.131 359.977C539.665 379.926 550.155 400.46 559.559 421.494C550.155 442.528 539.665 463.061 528.131 483.011M575.262 460.227C582.505 479.944 588.452 500.113 593.064 520.604C573.05 526.833 552.647 531.742 531.988 535.3C539.84 523.483 547.448 511.187 554.812 498.413C562.093 485.79 568.917 473.054 575.353 460.318M378.135 573.988C392.332 574.853 406.824 575.355 421.5 575.355C436.175 575.355 450.76 574.853 464.979 573.988C451.497 590.107 436.973 605.329 421.5 619.556C406.06 605.332 391.574 590.109 378.135 573.988ZM310.989 535.255C290.323 531.713 269.913 526.819 249.89 520.604C254.484 500.146 260.407 480.007 267.624 460.318C273.969 473.054 280.77 485.79 288.165 498.413C295.56 511.035 303.206 523.475 310.989 535.3M267.624 382.647C260.433 363.03 254.525 342.968 249.936 322.588C269.909 316.367 290.264 311.443 310.875 307.847C303.069 319.626 295.423 331.838 288.051 344.575C280.679 357.311 273.946 369.888 267.51 382.647M464.842 268.977C450.646 268.111 436.153 267.61 421.363 267.61C406.695 267.61 392.24 268.066 377.998 268.977C391.437 252.855 405.923 237.633 421.363 223.409C436.842 237.629 451.366 252.852 464.842 268.977ZM554.766 344.575C547.371 331.785 539.726 319.482 531.829 307.664C552.542 311.222 572.998 316.139 593.064 322.383C588.46 342.839 582.536 362.976 575.33 382.67C568.985 369.933 562.161 357.197 554.789 344.597M242.998 280.551C237.223 224.411 249.023 183.537 275.133 168.476C283.509 163.866 292.959 161.555 302.521 161.778C328.791 161.778 362.273 176.086 397.946 203.609C375.214 224.947 354.353 248.188 335.592 273.078C304.678 276.849 274.138 283.221 244.299 292.126C243.774 288.229 243.294 284.379 242.929 280.551M209.949 337.648C213.464 336.129 217.047 334.61 220.699 333.091C227.878 363.327 237.613 392.9 249.799 421.494C237.59 450.143 227.847 479.778 220.676 510.078C162.522 486.269 128.812 453.277 128.812 421.494C128.812 391.373 158.482 360.82 209.949 337.648ZM275.133 674.511C249.023 659.451 237.223 618.576 242.998 562.436C243.363 558.608 243.842 554.758 244.367 550.839C274.195 559.804 304.738 566.199 335.661 569.955C354.412 594.839 375.258 618.079 397.969 639.423C348.237 677.769 302.795 690.414 275.201 674.511M600.025 562.436C605.731 618.599 594 659.451 567.867 674.511C540.296 690.46 494.832 677.769 445.122 639.423C467.826 618.079 488.664 594.838 507.408 569.955C538.331 566.201 568.874 559.806 598.701 550.839C599.249 554.758 599.706 558.608 600.094 562.436M622.415 510.033C615.224 479.75 605.474 450.131 593.27 421.494C605.468 392.84 615.211 363.206 622.392 332.909C680.432 356.718 714.234 389.71 714.234 421.494C714.234 453.277 680.524 486.269 622.369 510.078" fill="#7A68E7"/>
+</g>
+<path d="M21.5 199.5V110.5C21.5 86.8957 30.8768 64.2582 47.5675 47.5675C64.2582 30.8768 86.8957 21.5 110.5 21.5H199.5" stroke="#7A68E7" stroke-width="42.6667" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M644.5 21.5H733.5C757.104 21.5 779.742 30.8768 796.432 47.5675C813.123 64.2582 822.5 86.8957 822.5 110.5V199.5" stroke="#7A68E7" stroke-width="42.6667" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M822.5 644.5V733.5C822.5 757.105 813.123 779.742 796.432 796.433C779.742 813.123 757.104 822.5 733.5 822.5H644.5" stroke="#7A68E7" stroke-width="42.6667" stroke-linecap="round" stroke-linejoin="round"/>
+<path d="M199.5 822.5H110.5C86.8957 822.5 64.2582 813.123 47.5675 796.433C30.8768 779.742 21.5 757.105 21.5 733.5V644.5" stroke="#7A68E7" stroke-width="42.6667" stroke-linecap="round" stroke-linejoin="round"/>
+<defs>
+<clipPath id="clip0_1_46">
+<rect width="647" height="581" fill="white" transform="translate(98 131)"/>
+</clipPath>
+</defs>
+</svg>
+
+
+
+--- File: packages/extension/src/background.ts ---
+
+import browser from 'webextension-polyfill';
+import type { OutgoingMessage } from './types/messages';
+
+// Store the latest state
+let currentState: OutgoingMessage | null = null;
+
+// Listen for messages from content script
+browser.runtime.onMessage.addListener((message: unknown) => {
+  // Store the latest state
+  if (typeof message === 'object' && message !== null && 'type' in message) {
+    currentState = message as OutgoingMessage;
+  }
+
+  // Forward the message to any open popups
+  void browser.runtime.sendMessage(message).catch(() => {
+    // Ignore errors when popup is closed
+  });
+});
+
+// Listen for connection from popup to send initial state
+browser.runtime.onConnect.addListener((port) => {
+  if (port.name === 'popup') {
+    // Send the current state when popup connects
+    if (currentState) {
+      port.postMessage(currentState);
+    }
+  }
+});
+
+
+
+--- File: packages/extension/src/content.ts ---
+
+import browser from 'webextension-polyfill';
+import { IncomingMessageSchema, type OutgoingMessage } from './types/messages';
+// Helper function to get React version
+function getReactVersion(): string {
+  const hook = (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__;
+  if (!hook || !hook.renderers) {
+    return 'Not Found';
+  }
+
+  // Get the first renderer
+  const firstRenderer = Array.from(hook.renderers.values())[0];
+  if (!firstRenderer) {
+    return 'Not Found';
+  }
+
+  const version = (firstRenderer as any)?.version;
+  return version ?? 'Unknown';
+}
+
+console.log('content loaded', getReactVersion());
+
+// Wait for document to be ready before sending initial message
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    console.log(
+      'sending initial message',
+      (window as any).__REACT_DEVTOOLS_GLOBAL_HOOK__,
+    );
+  }, 1000);
+  browser.runtime.sendMessage({
+    type: 'SCAN_UPDATE',
+    reactVersion: getReactVersion(),
+    componentCount: 0,
+    rerenderCount: 0,
+    status: 'Starting scan...',
+  });
+});
+
+chrome.runtime.onMessage.addListener((message: unknown) => {
+  const { data, error } = IncomingMessageSchema.safeParse(message);
+  if (error) {
+    console.error('Invalid message', error);
+    return;
+  }
+
+  switch (data.type) {
+    case 'OPEN_PANEL':
+      window.dispatchEvent(new CustomEvent('react-scan:toggle-panel'));
+      break;
+    case 'START_SCAN':
+      window.dispatchEvent(new CustomEvent('react-scan:start'));
+      // Send initial version when scanning starts
+      break;
+    case 'STOP_SCAN':
+      window.dispatchEvent(new CustomEvent('react-scan:stop'));
+      break;
+  }
+});
+
+window.addEventListener('react-scan:update', ((event: Event) => {
+  const customEvent = event as CustomEvent;
+  const message: OutgoingMessage = {
+    type: 'SCAN_UPDATE',
+    reactVersion: getReactVersion(),
+    ...customEvent.detail,
+  };
+  chrome.runtime.sendMessage(message);
+}) as EventListener);
+
+
+
+--- File: packages/extension/src/manifest.json ---
+
+{
+  "{{chrome}}.manifest_version": 3,
+  "{{firefox}}.manifest_version": 2,
+  "name": "React Scan",
+  "version": "1.0.0",
+  "description": "Scan React apps for performance problems",
+  "icons": {
+    "16": "icon/16.png",
+    "32": "icon/32.png",
+    "48": "icon/48.png",
+    "96": "icon/96.png",
+    "128": "icon/128.png"
+  },
+  "{{chrome}}.action": {
+    "default_popup": "src/popup/popup.html"
+  },
+  "{{firefox}}.browser_action": {
+    "default_popup": "src/popup/popup.html"
+  },
+  "background": {
+    "{{chrome}}.service_worker": "src/background.ts",
+    "{{firefox}}.scripts": ["src/background.ts"]
+  },
+  "permissions": ["activeTab", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/scan-dist.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    },
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content.ts"],
+      "run_at": "document_start"
+    }
+  ]
+}
+
+
+
+--- File: packages/extension/src/popup/pages/index.css ---
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stats {
+  background: #f5f5f5;
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+button {
+  background: #0066ff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.toggle-disabled {
+  background: #ccc;
+}
+
+button:hover {
+  background: #0052cc;
+}
+
+.status {
+  color: #666;
+  font-size: 14px;
+}
+
+
+
+--- File: packages/extension/src/popup/pages/index.tsx ---
+
+import './index.css';
+import { useCallback, useEffect, useState } from 'react';
+import browser from 'webextension-polyfill';
+import { OutgoingMessageSchema } from '../../types/messages';
+
+async function getCurrentTab() {
+  const [tab] = await browser.tabs.query({ active: true, currentWindow: true });
+  return tab;
+}
+
+interface PageState {
+  reactVersion: string;
+  componentCount: number;
+  rerenderCount: number;
+  status: string;
+}
+
+console.log('popup loaded');
+
+export default function Popup() {
+  const [enabled, setEnabled] = useState(true);
+  const [pageState, setPageState] = useState<PageState>({
+    reactVersion: '-',
+    componentCount: 0,
+    rerenderCount: 0,
+    status: 'Scanning...',
+  });
+
+  useEffect(() => {
+    // Connect to background script
+    const port = browser.runtime.connect({ name: 'popup' });
+
+    // Listen for initial state and updates
+    const listener = (message: unknown) => {
+      const result = OutgoingMessageSchema.safeParse(message);
+      if (!result.success) {
+        return;
+      }
+
+      if (result.data.type === 'SCAN_UPDATE') {
+        setPageState({
+          reactVersion: result.data.reactVersion ?? '-',
+          componentCount: result.data.componentCount ?? 0,
+          rerenderCount: result.data.rerenderCount ?? 0,
+          status: result.data.status ?? 'Scanning...',
+        });
+      }
+    };
+
+    // Listen for messages from port and runtime
+    port.onMessage.addListener(listener);
+    browser.runtime.onMessage.addListener(listener);
+
+    return () => {
+      port.disconnect();
+      browser.runtime.onMessage.removeListener(listener);
+    };
+  }, []);
+
+  const onPanelClick = useCallback(() => {
+    void getCurrentTab().then((tab) => {
+      if (!tab.id) return;
+      browser.tabs.sendMessage(tab.id, { type: 'OPEN_PANEL' });
+    });
+  }, []);
+
+  const toggleEnabled = useCallback(() => {
+    const newEnabled = !enabled;
+    setEnabled(newEnabled);
+
+    void getCurrentTab().then((tab) => {
+      if (!tab.id) return;
+      browser.tabs.sendMessage(tab.id, {
+        type: newEnabled ? 'START_SCAN' : 'STOP_SCAN',
+      });
+    });
+  }, [enabled]);
+
+  return (
+    <div className="container">
+      <button
+        className={enabled ? '' : 'toggle-disabled'}
+        onClick={toggleEnabled}
+      >
+        {enabled ? 'Disable' : 'Enable'}
+      </button>
+      <div className="stats">
+        <div className="stat-row">
+          <span>React Version:</span>
+          <span>{pageState.reactVersion}</span>
+        </div>
+        <div className="stat-row">
+          <span>Components Scanned:</span>
+          <span>{pageState.componentCount}</span>
+        </div>
+        <div className="stat-row">
+          <span>Re-renders:</span>
+          <span>{pageState.rerenderCount}</span>
+        </div>
+      </div>
+      <button onClick={onPanelClick}>Open Details Panel</button>
+      <div className="status">{pageState.status}</div>
+    </div>
+  );
+}
+
+
+
+--- File: packages/extension/src/popup/popup.css ---
+
+body {
+  width: 300px;
+  padding: 16px;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+
+
+
+--- File: packages/extension/src/popup/popup.html ---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./popup.css" />
+    <title>React-Scan</title>
+  </head>
+  <body></body>
+  <script type="module" src="./popup.tsx"></script>
+</html>
+
+
+
+--- File: packages/extension/src/popup/popup.tsx ---
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import Popup from './pages';
+
+ReactDOM.createRoot(document.body).render(
+  <React.StrictMode>
+    <Popup />
+  </React.StrictMode>,
+);
+
+
+
+--- File: packages/extension/src/scan-dist.js ---
+
+/**
+ * todo this should be cached to the latest version on unpkg
+ * but we can't load the code with a script tag using unpkg or we get
+ * CORS errors
+ */
+!(function (e) {
+  'use strict';
+  var t = Object.create,
+    n = Object.defineProperty,
+    r = Object.getOwnPropertyDescriptor,
+    o = Object.getOwnPropertyNames,
+    l = Object.getOwnPropertySymbols,
+    i = Object.getPrototypeOf,
+    u = Object.prototype.hasOwnProperty,
+    a = Object.prototype.propertyIsEnumerable,
+    c = (e, t, r) =>
+      t in e
+        ? n(e, t, { enumerable: !0, configurable: !0, writable: !0, value: r })
+        : (e[t] = r),
+    s = (e, t) => {
+      for (var n in t || (t = {})) u.call(t, n) && c(e, n, t[n]);
+      if (l) for (var n of l(t)) a.call(t, n) && c(e, n, t[n]);
+      return e;
+    },
+    f = (e, t) =>
+      function () {
+        return (
+          t || (0, e[o(e)[0]])((t = { exports: {} }).exports, t), t.exports
+        );
+      },
+    p = (e, l, a) => (
+      (a = e != null ? t(i(e)) : {}),
+      ((e, t, l, i) => {
+        if ((t && typeof t === 'object') || typeof t === 'function')
+          {for (const a of o(t))
+            {u.call(e, a) ||
+              a === l ||
+              n(e, a, {
+                get: () => t[a],
+                enumerable: !(i = r(t, a)) || i.enumerable,
+              });}}
+        return e;
+      })(
+        e && e.__esModule ? a : n(a, 'default', { value: e, enumerable: !0 }),
+        e,
+      )
+    ),
+    d = (e, t, n) =>
+      new Promise((r, o) => {
+        var l = (e) => {
+            try {
+              u(n.next(e));
+            } catch (e) {
+              o(e);
+            }
+          },
+          i = (e) => {
+            try {
+              u(n.throw(e));
+            } catch (e) {
+              o(e);
+            }
+          },
+          u = (e) =>
+            e.done ? r(e.value) : Promise.resolve(e.value).then(l, i);
+        u((n = n.apply(e, t)).next());
+      }),
+    m = f({
+      'node_modules/.pnpm/react@18.3.1/node_modules/react/cjs/react.production.min.js'(
+        e,
+      ) {
+        const t = Symbol.for('react.element'),
+          n = Symbol.for('react.portal'),
+          r = Symbol.for('react.fragment'),
+          o = Symbol.for('react.strict_mode'),
+          l = Symbol.for('react.profiler'),
+          i = Symbol.for('react.provider'),
+          u = Symbol.for('react.context'),
+          a = Symbol.for('react.forward_ref'),
+          c = Symbol.for('react.suspense'),
+          s = Symbol.for('react.memo'),
+          f = Symbol.for('react.lazy'),
+          p = Symbol.iterator;
+        const d = {
+            isMounted: function () {
+              return !1;
+            },
+            enqueueForceUpdate: function () {},
+            enqueueReplaceState: function () {},
+            enqueueSetState: function () {},
+          },
+          m = Object.assign,
+          y = {};
+        function h(e, t, n) {
+          (this.props = e),
+            (this.context = t),
+            (this.refs = y),
+            (this.updater = n || d);
+        }
+        function b() {}
+        function g(e, t, n) {
+          (this.props = e),
+            (this.context = t),
+            (this.refs = y),
+            (this.updater = n || d);
+        }
+        (h.prototype.isReactComponent = {}),
+          (h.prototype.setState = function (e, t) {
+            if (typeof e !== 'object' && typeof e !== 'function' && e != null)
+              {throw Error(
+                'setState(...): takes an object of state variables to update or a function which returns an object of state variables.',
+              );}
+            this.updater.enqueueSetState(this, e, t, 'setState');
+          }),
+          (h.prototype.forceUpdate = function (e) {
+            this.updater.enqueueForceUpdate(this, e, 'forceUpdate');
+          }),
+          (b.prototype = h.prototype);
+        const v = (g.prototype = new b());
+        (v.constructor = g), m(v, h.prototype), (v.isPureReactComponent = !0);
+        const w = Array.isArray,
+          _ = Object.prototype.hasOwnProperty,
+          $ = { current: null },
+          S = { key: !0, ref: !0, __self: !0, __source: !0 };
+        function C(e, n, r) {
+          let o,
+            l = {},
+            i = null,
+            u = null;
+          if (n != null)
+            {for (o in (void 0 !== n.ref && (u = n.ref),
+            void 0 !== n.key && (i = `${  n.key}`),
+            n))
+              {_.call(n, o) && !S.hasOwnProperty(o) && (l[o] = n[o]);}}
+          let a = arguments.length - 2;
+          if (a === 1) l.children = r;
+          else if (a > 1) {
+            for (var c = Array(a), s = 0; s < a; s++) c[s] = arguments[s + 2];
+            l.children = c;
+          }
+          if (e && e.defaultProps)
+            {for (o in (a = e.defaultProps)) void 0 === l[o] && (l[o] = a[o]);}
+          return {
+            $$typeof: t,
+            type: e,
+            key: i,
+            ref: u,
+            props: l,
+            _owner: $.current,
+          };
+        }
+        function x(e) {
+          return typeof e === 'object' && e !== null && e.$$typeof === t;
+        }
+        const E = /\/+/g;
+        function O(e, t) {
+          return typeof e === 'object' && e !== null && e.key != null
+            ? (function (e) {
+                const t = { '=': '=0', ':': '=2' };
+                return (
+                  `$${ 
+                  e.replace(/[=:]/g, function (e) {
+                    return t[e];
+                  })}`
+                );
+              })(`${  e.key}`)
+            : t.toString(36);
+        }
+        function j(e, r, o, l, i) {
+          let u = typeof e;
+          (u !== 'undefined' && u !== 'boolean') || (e = null);
+          let a = !1;
+          if (e === null) a = !0;
+          else
+            {switch (u) {
+              case 'string':
+              case 'number':
+                a = !0;
+                break;
+              case 'object':
+                switch (e.$$typeof) {
+                  case t:
+                  case n:
+                    a = !0;
+                }
+            }}
+          if (a)
+            {return (
+              (i = i((a = e))),
+              (e = l === '' ? `.${  O(a, 0)}` : l),
+              w(i)
+                ? ((o = ''),
+                  e != null && (o = `${e.replace(E, '$&/')  }/`),
+                  j(i, r, o, '', function (e) {
+                    return e;
+                  }))
+                : i != null &&
+                  (x(i) &&
+                    (i = (function (e, n) {
+                      return {
+                        $$typeof: t,
+                        type: e.type,
+                        key: n,
+                        ref: e.ref,
+                        props: e.props,
+                        _owner: e._owner,
+                      };
+                    })(
+                      i,
+                      o +
+                        (!i.key || (a && a.key === i.key)
+                          ? ''
+                          : `${(`${  i.key}`).replace(E, '$&/')  }/`) +
+                        e,
+                    )),
+                  r.push(i)),
+              1
+            );}
+          if (((a = 0), (l = l === '' ? '.' : `${l  }:`), w(e)))
+            {for (var c = 0; c < e.length; c++) {
+              var s = l + O((u = e[c]), c);
+              a += j(u, r, o, s, i);
+            }}
+          else if (
+            ((s = (function (e) {
+              return e === null || typeof e !== 'object'
+                ? null
+                : typeof (e = (p && e[p]) || e['@@iterator']) === 'function'
+                  ? e
+                  : null;
+            })(e)),
+            typeof s === 'function')
+          )
+            {for (e = s.call(e), c = 0; !(u = e.next()).done; )
+              {a += j((u = u.value), r, o, (s = l + O(u, c++)), i);}}
+          else if (u === 'object')
+            {throw (
+              ((r = String(e)),
+              Error(
+                `Objects are not valid as a React child (found: ${ 
+                  r === '[object Object]'
+                    ? `object with keys {${  Object.keys(e).join(', ')  }}`
+                    : r 
+                  }). If you meant to render a collection of children, use an array instead.`,
+              ))
+            );}
+          return a;
+        }
+        function k(e, t, n) {
+          if (e == null) return e;
+          let r = [],
+            o = 0;
+          return (
+            j(e, r, '', '', function (e) {
+              return t.call(n, e, o++);
+            }),
+            r
+          );
+        }
+        function R(e) {
+          if (e._status === -1) {
+            let t = e._result;
+            (t = t()).then(
+              function (t) {
+                (e._status !== 0 && e._status !== -1) ||
+                  ((e._status = 1), (e._result = t));
+              },
+              function (t) {
+                (e._status !== 0 && e._status !== -1) ||
+                  ((e._status = 2), (e._result = t));
+              },
+            ),
+              e._status === -1 && ((e._status = 0), (e._result = t));
+          }
+          if (e._status === 1) return e._result.default;
+          throw e._result;
+        }
+        const P = { current: null },
+          T = { transition: null },
+          L = {
+            ReactCurrentDispatcher: P,
+            ReactCurrentBatchConfig: T,
+            ReactCurrentOwner: $,
+          };
+        function F() {
+          throw Error(
+            'act(...) is not supported in production builds of React.',
+          );
+        }
+        (e.Children = {
+          map: k,
+          forEach: function (e, t, n) {
+            k(
+              e,
+              function () {
+                t.apply(this, arguments);
+              },
+              n,
+            );
+          },
+          count: function (e) {
+            let t = 0;
+            return (
+              k(e, function () {
+                t++;
+              }),
+              t
+            );
+          },
+          toArray: function (e) {
+            return (
+              k(e, function (e) {
+                return e;
+              }) || []
+            );
+          },
+          only: function (e) {
+            if (!x(e))
+              {throw Error(
+                'React.Children.only expected to receive a single React element child.',
+              );}
+            return e;
+          },
+        }),
+          (e.Component = h),
+          (e.Fragment = r),
+          (e.Profiler = l),
+          (e.PureComponent = g),
+          (e.StrictMode = o),
+          (e.Suspense = c),
+          (e.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = L),
+          (e.act = F),
+          (e.cloneElement = function (e, n, r) {
+            if (e == null)
+              {throw Error(
+                `React.cloneElement(...): The argument must be a React element, but you passed ${ 
+                  e 
+                  }.`,
+              );}
+            let o = { ...e.props},
+              l = e.key,
+              i = e.ref,
+              u = e._owner;
+            if (n != null) {
+              if (
+                (void 0 !== n.ref && ((i = n.ref), (u = $.current)),
+                void 0 !== n.key && (l = `${  n.key}`),
+                e.type && e.type.defaultProps)
+              )
+                {var a = e.type.defaultProps;}
+              for (c in n)
+                {_.call(n, c) &&
+                  !S.hasOwnProperty(c) &&
+                  (o[c] = void 0 === n[c] && void 0 !== a ? a[c] : n[c]);}
+            }
+            var c = arguments.length - 2;
+            if (c === 1) o.children = r;
+            else if (c > 1) {
+              a = Array(c);
+              for (let s = 0; s < c; s++) a[s] = arguments[s + 2];
+              o.children = a;
+            }
+            return {
+              $$typeof: t,
+              type: e.type,
+              key: l,
+              ref: i,
+              props: o,
+              _owner: u,
+            };
+          }),
+          (e.createContext = function (e) {
+            return (
+              ((e = {
+                $$typeof: u,
+                _currentValue: e,
+                _currentValue2: e,
+                _threadCount: 0,
+                Provider: null,
+                Consumer: null,
+                _defaultValue: null,
+                _globalName: null,
+              }).Provider = { $$typeof: i, _context: e }),
+              (e.Consumer = e)
+            );
+          }),
+          (e.createElement = C),
+          (e.createFactory = function (e) {
+            const t = C.bind(null, e);
+            return (t.type = e), t;
+          }),
+          (e.createRef = function () {
+            return { current: null };
+          }),
+          (e.forwardRef = function (e) {
+            return { $$typeof: a, render: e };
+          }),
+          (e.isValidElement = x),
+          (e.lazy = function (e) {
+            return {
+              $$typeof: f,
+              _payload: { _status: -1, _result: e },
+              _init: R,
+            };
+          }),
+          (e.memo = function (e, t) {
+            return { $$typeof: s, type: e, compare: void 0 === t ? null : t };
+          }),
+          (e.startTransition = function (e) {
+            const t = T.transition;
+            T.transition = {};
+            try {
+              e();
+            } finally {
+              T.transition = t;
+            }
+          }),
+          (e.unstable_act = F),
+          (e.useCallback = function (e, t) {
+            return P.current.useCallback(e, t);
+          }),
+          (e.useContext = function (e) {
+            return P.current.useContext(e);
+          }),
+          (e.useDebugValue = function () {}),
+          (e.useDeferredValue = function (e) {
+            return P.current.useDeferredValue(e);
+          }),
+          (e.useEffect = function (e, t) {
+            return P.current.useEffect(e, t);
+          }),
+          (e.useId = function () {
+            return P.current.useId();
+          }),
+          (e.useImperativeHandle = function (e, t, n) {
+            return P.current.useImperativeHandle(e, t, n);
+          }),
+          (e.useInsertionEffect = function (e, t) {
+            return P.current.useInsertionEffect(e, t);
+          }),
+          (e.useLayoutEffect = function (e, t) {
+            return P.current.useLayoutEffect(e, t);
+          }),
+          (e.useMemo = function (e, t) {
+            return P.current.useMemo(e, t);
+          }),
+          (e.useReducer = function (e, t, n) {
+            return P.current.useReducer(e, t, n);
+          }),
+          (e.useRef = function (e) {
+            return P.current.useRef(e);
+          }),
+          (e.useState = function (e) {
+            return P.current.useState(e);
+          }),
+          (e.useSyncExternalStore = function (e, t, n) {
+            return P.current.useSyncExternalStore(e, t, n);
+          }),
+          (e.useTransition = function () {
+            return P.current.useTransition();
+          }),
+          (e.version = '18.3.1');
+      },
+    }),
+    y = f({
+      'node_modules/.pnpm/react@18.3.1/node_modules/react/index.js'(e, t) {
+        t.exports = m();
+      },
+    }),
+    h = p(y()),
+    b = p(y()),
+    g = (e) => {
+      let t;
+      switch (typeof e) {
+        case 'function':
+          return e.toString();
+        case 'string':
+          return e;
+        case 'object':
+          if (e === null) return 'null';
+          if (Array.isArray(e)) return e.length > 0 ? '[…]' : '[]';
+          if (
+            b.isValidElement(e) &&
+            '$$typeof' in e &&
+            typeof e.$$typeof === 'symbol' &&
+            String(e.$$typeof) === 'Symbol(react.element)'
+          )
+            {return `<${(t = S(e.type)) != null ? t : ''}${Object.keys(e.props || {}).length > 0 ? ' …' : ''}>`;}
+          if (typeof e === 'object' && e !== null && e.constructor === Object) {
+            for (const t in e)
+              {if (Object.prototype.hasOwnProperty.call(e, t)) return '{…}';}
+            return '{}';
+          }
+          const n = Object.prototype.toString.call(e).slice(8, -1);
+          if (n === 'Object') {
+            const t = Object.getPrototypeOf(e),
+              n = t == null ? void 0 : t.constructor;
+            if (typeof n === 'function')
+              {return `${n.displayName || n.name || ''}{…}`;}
+          }
+          return `${n}{…}`;
+        default:
+          return String(e);
+      }
+    },
+    v = b.createElement('div'),
+    w = () => {},
+    _ = (e, t, n = !1) => {
+      if (!e) return null;
+      if (!0 === t(e)) return e;
+      let r = n ? e.return : e.child;
+      for (; r; ) {
+        const e = _(r, t, n);
+        if (e) return e;
+        r = n ? null : r.sibling;
+      }
+      return null;
+    },
+    $ = (e) =>
+      typeof e === 'function'
+        ? e
+        : typeof e === 'object' && e
+          ? $(e.type || e.render)
+          : null,
+    S = (e) => ((e = $(e)) && (e.displayName || e.name)) || null,
+    C = ({ onCommitFiberRoot: e }) => {
+      let t = window.__REACT_DEVTOOLS_GLOBAL_HOOK__;
+      const n = new Map();
+      let r = 0;
+      t ||
+        ((t = {
+          checkDCE: w,
+          supportsFiber: !0,
+          renderers: n,
+          onScheduleFiberRoot: w,
+          onCommitFiberRoot: w,
+          onCommitFiberUnmount: w,
+          inject(e) {
+            const t = ++r;
+            return n.set(t, e), t;
+          },
+        }),
+        (window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = t));
+      const o = t.onCommitFiberRoot;
+      return (
+        (t.onCommitFiberRoot = (t, n) => {
+          o && o(t, n), e(t, n);
+        }),
+        t
+      );
+    },
+    x = 'Menlo,Consolas,Monaco,Liberation Mono,Lucida Console,monospace',
+    E = '115,97,230',
+    O = !1,
+    j = [],
+    k = null,
+    R = [],
+    P = (e) => `${e.rect.top}-${e.rect.left}-${e.rect.width}-${e.rect.height}`,
+    T = (e) => {
+      let t, n, r;
+      if (
+        !e ||
+        !((e) => {
+          let t, n, r;
+          if (!e) return !0;
+          const o =
+              ((t = e.alternate) == null ? void 0 : t.memoizedProps) || {},
+            l = e.memoizedProps || {},
+            i = !(
+              1 &
+              ~((r = (n = e.flags) != null ? n : e.effectTag) != null ? r : 0)
+            );
+          switch (e.tag) {
+            case 1:
+            case 0:
+            case 9:
+            case 11:
+              return i;
+            case 14:
+            case 15:
+              if (typeof e.type.compare === 'function')
+                {return !e.type.compare(o, l);}
+              if (o && typeof o === 'object')
+                {for (const e in s(s({}, o), l))
+                  {if (!Object.is(o[e], l[e])) return !0;}}
+              return i;
+            default:
+              return (
+                !e.alternate ||
+                o !== l ||
+                e.alternate.memoizedState !== e.memoizedState ||
+                e.alternate.ref !== e.ref
+              );
+          }
+        })(e) ||
+        O
+      )
+        {return null;}
+      if (!$(e.type)) return null;
+      const o = [],
+        l = ['function', 'object'];
+      let i = !1;
+      const u = (t = e.alternate) == null ? void 0 : t.memoizedProps,
+        a = e.memoizedProps;
+      for (const e in s(s({}, u), a)) {
+        const t = u == null ? void 0 : u[e],
+          n = a == null ? void 0 : a[e];
+        if (
+          Object.is(t, n) ||
+          h.isValidElement(t) ||
+          h.isValidElement(n) ||
+          e === 'children'
+        )
+          {continue;}
+        const r = { name: e, prevValue: t, nextValue: n, unstable: !1 };
+        o.push(r);
+        const c = g(t),
+          s = g(n);
+        l.includes(typeof t) &&
+          l.includes(typeof n) &&
+          c === s &&
+          ((i = !0), (r.unstable = !0));
+      }
+      if (!o.length) return null;
+      let c = _(e, (e) => typeof e.type === 'string');
+      if ((c || (c = _(e, (e) => typeof e.type === 'string', !0)), !c))
+        {return null;}
+      const f = c.stateNode;
+      if (!(f instanceof HTMLElement)) return null;
+      if (
+        f.tagName.toLowerCase().includes('million') ||
+        f.hasAttribute('data-react-scan-ignore')
+      )
+        {return null;}
+      const p = window.getComputedStyle(f);
+      if (
+        p.display === 'none' ||
+        p.visibility === 'hidden' ||
+        p.opacity === '0'
+      )
+        {return null;}
+      const d = f.getBoundingClientRect();
+      if (
+        !(
+          d.top >= 0 ||
+          d.left >= 0 ||
+          d.bottom <= window.innerHeight ||
+          d.right <= window.innerWidth
+        )
+      )
+        {return null;}
+      if (!d.height || !d.width) return null;
+      const m = (n = S(e.type)) != null ? n : '',
+        y = (r = e.updateQueue) == null ? void 0 : r.memoCache,
+        { totalTime: b, selfTime: v } = ((e) => {
+          let t, n, r;
+          const o = (t = e == null ? void 0 : e.actualDuration) != null ? t : 0;
+          let l = o,
+            i = (n = e == null ? void 0 : e.child) != null ? n : null;
+          for (; o > 0 && i != null; )
+            {(l -= (r = i.actualDuration) != null ? r : 0), (i = i.sibling);}
+          return { totalTime: o, selfTime: l };
+        })(e);
+      let w = null,
+        C = null;
+      for (let e = 0, t = o.length; e < t; e++) {
+        const { name: t, prevValue: n, nextValue: r, unstable: l } = o[e];
+        l &&
+          (w != null || (w = {}),
+          C != null || (C = {}),
+          (w[`${t} (prev)`] = n),
+          (C[`${t} (next)`] = r));
+      }
+      return {
+        rect: d,
+        names: new Set([m]),
+        count: 1,
+        totalTime: b,
+        selfTime: v,
+        unstable: i,
+        forget: y,
+        trigger: !1,
+        prevChangedProps: w,
+        nextChangedProps: C,
+      };
+    },
+    L = (e, t = new Map()) => {
+      const { clearLog: n } = D();
+      if ((n && console.clear(), !R.length)) return;
+      const r = R;
+      (R = []),
+        requestAnimationFrame(() => {
+          d(void 0, null, function* () {
+            const n = R;
+            R = [];
+            const o = n
+                ? ((e) => {
+                    const t = new Map();
+                    for (let n = 0, r = e.length; n < r; n++) {
+                      const r = e[n],
+                        o = P(r),
+                        l = t.get(o);
+                      l
+                        ? (r.names.forEach((e) => {
+                            l.names.add(e);
+                          }),
+                          (l.count += r.count),
+                          (l.totalTime += r.totalTime),
+                          (l.selfTime += r.selfTime))
+                        : t.set(o, r);
+                    }
+                    return Array.from(t.values());
+                  })([...r, ...n])
+                : r,
+              l = new Map();
+            yield Promise.all(
+              o.map((n) =>
+                d(void 0, null, function* () {
+                  const r = P(n);
+                  t.has(r) || (yield F(e, n), l.set(r, n));
+                }),
+              ),
+            ),
+              R.length && L(e, l);
+          });
+        });
+    },
+    F = (e, t) =>
+      new Promise((n) => {
+        const {
+            unstable: r,
+            names: o,
+            count: l,
+            trigger: i,
+            forget: u,
+            prevChangedProps: a,
+            nextChangedProps: c,
+          } = t,
+          s = r ? 30 : 10;
+        let f = null;
+        o.size &&
+          ((f = Array.from(o.values())
+            .filter((e) => typeof e === 'string' && e.trim())
+            .slice(0, 3)
+            .join(', ')),
+          f.length > 20 && (f = `${f.slice(0, 20)}…`),
+          l > 1 && (f += ` ×${l}`),
+          i && (f = `🔥 ${f}`),
+          u && (f = `${f} ✨`));
+        const { log: p } = D();
+        f &&
+          a &&
+          c &&
+          p &&
+          (console.group(
+            `%c${f}`,
+            'background: hsla(0,0%,70%,.3); border-radius:3px; padding: 0 2px;',
+          ),
+          console.log('Memoize these props:'),
+          console.log(a, '!==', c),
+          console.groupEnd()),
+          j.push({
+            outline: t,
+            alpha: 0.8,
+            frame: 0,
+            totalFrames: s,
+            resolve: n,
+            text: f,
+          }),
+          k || M(e);
+      }),
+    M = (e) => {
+      e.clearRect(0, 0, e.canvas.width, e.canvas.height);
+      const t = new Path2D();
+      let n = 0,
+        r = 0;
+      const o = [];
+      for (let e = j.length - 1; e >= 0; e--) {
+        const l = j[e],
+          { outline: i, frame: u, totalFrames: a } = l,
+          { rect: c, unstable: s } = i,
+          f = s ? 0.8 : 0.2;
+        (l.alpha = f * (1 - u / a)),
+          (n = Math.max(n, l.alpha)),
+          (r = Math.max(r, 0.1 * l.alpha)),
+          t.rect(c.x, c.y, c.width, c.height),
+          s && o.push({ alpha: l.alpha, outline: i, text: l.text }),
+          l.frame++,
+          l.frame > l.totalFrames && (j.splice(e, 1), l.resolve());
+      }
+      e.save(),
+        (e.strokeStyle = `rgba(${E}, ${n})`),
+        (e.lineWidth = 1),
+        (e.fillStyle = `rgba(${E}, ${r})`),
+        e.stroke(t),
+        e.fill(t),
+        e.restore();
+      for (let t = 0, n = o.length; t < n; t++) {
+        const { alpha: n, outline: r, text: l } = o[t],
+          { rect: i } = r;
+        if ((e.save(), l)) {
+          e.font = `10px ${x}`;
+          const t = e.measureText(l).width,
+            r = 10,
+            o = i.x,
+            u = i.y - r - 4;
+          (e.fillStyle = `rgba(${E},${n})`),
+            e.fillRect(o, u, t + 4, r + 4),
+            (e.fillStyle = `rgba(255,255,255,${n})`),
+            e.fillText(l, o + 2, u + r);
+        }
+        e.restore();
+      }
+      k = j.length ? requestAnimationFrame(() => M(e)) : null;
+    },
+    A = (e) => {
+      const t = document.createElement('template');
+      return (t.innerHTML = e), t.content.firstChild;
+    },
+    I = () => {
+      const e = A(
+          '<canvas id="react-scan-canvas" style="position:fixed;top:0;left:0;width:100vw;height:100vh;pointer-events:none;z-index:2147483646" aria-hidden="true"/>',
+        ),
+        t = e.getContext('2d');
+      let n = !1;
+      const r = () => {
+        const r = window.devicePixelRatio;
+        (e.width = r * window.innerWidth),
+          (e.height = r * window.innerHeight),
+          t == null || t.scale(r, r),
+          (n = !1);
+      };
+      let o;
+      return (
+        r(),
+        window.addEventListener('resize', () => {
+          n ||
+            ((n = !0),
+            requestAnimationFrame(() => {
+              r();
+            }));
+        }),
+        (o = () => {
+          const t = document.getElementById('react-scan-canvas');
+          t && t.remove(), document.documentElement.appendChild(e);
+        }),
+        'scheduler' in globalThis
+          ? globalThis.scheduler.postTask(o, { priority: 'background' })
+          : 'requestIdleCallback' in window
+            ? requestIdleCallback(o)
+            : setTimeout(o, 0),
+        t
+      );
+    },
+    z = {
+      enabled: !0,
+      includeChildren: !0,
+      log: !1,
+      clearLog: !1,
+      production: !1,
+    },
+    V = z,
+    D = () => V,
+    q = null,
+    N = !1,
+    U = (e, t) => {};
+  typeof window !== 'undefined' &&
+    C({
+      onCommitFiberRoot: (e, t) => {
+        U(e, t);
+      },
+    });
+  const B = (e = z) => {
+    if (!(V = e != null ? e : V).produ
+
+--- Content truncated due to character limit ---
+--- File: packages/extension/tsconfig.json ---
+
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": false,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+
+
+
+--- File: packages/extension/tsconfig.node.json ---
+
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+
+
+--- File: packages/extension/vite.config.ts ---
+
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import webExtension, { readJsonFile } from 'vite-plugin-web-extension';
+
+function generateManifest() {
+  const manifest = readJsonFile('src/manifest.json');
+  const pkg = readJsonFile('package.json');
+  return {
+    name: pkg.name,
+    description: pkg.description,
+    version: pkg.version,
+    ...manifest,
+  };
+}
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  build: {
+    minify: 'terser',
+    terserOptions: {
+      keep_fnames: true,
+    },
+  },
+  plugins: [
+    react(),
+    webExtension({
+      manifest: generateManifest,
+      webExtConfig: {
+        startUrl: 'https://github.com/aidenybai/react-scan',
+        chromiumBinary: process.env.CHROMIUM_BINARY,
+      },
+    }),
+  ],
+  esbuild: {
+    minifyIdentifiers: false,
+    keepNames: true,
+  },
+});
+
+
+
+--- File: packages/scan/LICENSE ---
+
+Copyright 2024 Aiden Bai, Million Software, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+--- File: packages/scan/auto.d.ts ---
+
+export * from './dist/auto';
+
+
+
+--- File: packages/scan/bin/cli.js ---
+
+#! /usr/bin/env node
+require('../dist/cli');
+
+
+
+--- File: packages/scan/package.json ---
+
+{
+  "name": "react-scan",
+  "version": "0.0.35",
+  "description": "Scan your React app for renders",
+  "keywords": [
+    "react",
+    "react-scan",
+    "react scan",
+    "render",
+    "performance"
+  ],
+  "homepage": "https://react-scan.million.dev",
+  "bugs": {
+    "url": "https://github.com/aidenybai/react-scan/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aidenybai/react-scan.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Aiden Bai",
+    "email": "aiden@million.dev",
+    "url": "https://million.dev"
+  },
+  "type": "commonjs",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "production": {
+        "import": {
+          "types": "./dist/rsc-shim.d.mts",
+          "react-server": "./dist/rsc-shim.mjs",
+          "default": "./dist/rsc-shim.mjs"
+        },
+        "require": {
+          "types": "./dist/rsc-shim.d.ts",
+          "react-server": "./dist/rsc-shim.js",
+          "default": "./dist/rsc-shim.js"
+        }
+      },
+      "development": {
+        "import": {
+          "types": "./dist/index.d.mts",
+          "react-server": "./dist/rsc-shim.mjs",
+          "default": "./dist/index.mjs"
+        },
+        "require": {
+          "types": "./dist/index.d.ts",
+          "react-server": "./dist/rsc-shim.js",
+          "default": "./dist/index.js"
+        }
+      },
+      "default": {
+        "import": {
+          "types": "./dist/index.d.mts",
+          "react-server": "./dist/rsc-shim.mjs",
+          "default": "./dist/index.mjs"
+        },
+        "require": {
+          "types": "./dist/index.d.ts",
+          "react-server": "./dist/rsc-shim.js",
+          "default": "./dist/index.js"
+        }
+      }
+    },
+    "./auto": {
+      "production": {
+        "import": {
+          "types": "./dist/rsc-shim.d.mts",
+          "react-server": "./dist/rsc-shim.mjs",
+          "default": "./dist/rsc-shim.mjs"
+        },
+        "require": {
+          "types": "./dist/rsc-shim.d.ts",
+          "react-server": "./dist/rsc-shim.js",
+          "default": "./dist/rsc-shim.js"
+        }
+      },
+      "development": {
+        "import": {
+          "types": "./dist/auto.d.mts",
+          "react-server": "./dist/rsc-shim.mjs",
+          "default": "./dist/auto.mjs"
+        },
+        "require": {
+          "types": "./dist/auto.d.ts",
+          "react-server": "./dist/rsc-shim.js",
+          "default": "./dist/auto.js"
+        }
+      }
+    },
+    "./dist/*": "./dist/*.js",
+    "./dist/*.js": "./dist/*.js",
+    "./dist/*.mjs": "./dist/*.mjs"
+  },
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "browser": "dist/auto.global.js",
+  "types": "dist/index.d.ts",
+  "bin": "bin/cli.js",
+  "files": [
+    "dist",
+    "bin",
+    "package.json",
+    "README.md",
+    "LICENSE",
+    "auto.d.ts"
+  ],
+  "scripts": {
+    "build": "NODE_ENV=production tsup",
+    "build:copy": "NODE_ENV=production tsup && cat dist/auto.global.js | pbcopy",
+    "dev": "NODE_ENV=development tsup --watch",
+    "lint": "eslint 'src/**/*.{ts,tsx}' --fix",
+    "prettier": "prettier --config .prettierrc.mjs -w src",
+    "publint": "publint"
+  },
+  "dependencies": {
+    "@clack/core": "^0.3.5",
+    "@clack/prompts": "^0.8.2",
+    "kleur": "^4.1.5",
+    "mri": "^1.2.0",
+    "playwright": "^1.49.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-reconciler": "^0.28.8",
+    "@vercel/style-guide": "^6.0.0",
+    "eslint": "^8.57.1",
+    "prettier": "^3.3.3",
+    "publint": "^0.2.12",
+    "react": "*",
+    "react-dom": "*",
+    "react-reconciler": "^0.29.2",
+    "terser": "^5.36.0",
+    "tsup": "^8.2.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
+
+
+
+--- File: packages/scan/src/auto.ts ---
+
+import './core/instrumentation/init';
+import { scan } from './index';
+
+if (typeof window !== 'undefined') {
+  scan();
+  window.reactScan = scan;
+}
+
+export * from './index';
+
+
+
+--- File: packages/scan/src/cli.mts ---
+
+import { spawn } from 'node:child_process';
+import {
+  chromium,
+  firefox,
+  webkit,
+  devices,
+  type Browser,
+  type BrowserContext,
+} from 'playwright';
+import mri from 'mri';
+import { intro, confirm, isCancel, cancel, spinner } from '@clack/prompts';
+import { bgMagenta, dim, red } from 'kleur';
+import fs from 'node:fs';
+import path from 'node:path';
+
+const truncateString = (str: string, maxLength: number) => {
+  str = str.replace('http://', '').replace('https://', '').replace('www.', '');
+  if (str.endsWith('/')) {
+    str = str.slice(0, -1);
+  }
+  if (str.length > maxLength) {
+    const half = Math.floor(maxLength / 2);
+    const start = str.slice(0, half);
+    const end = str.slice(str.length - (maxLength - half));
+    return start + '…' + end;
+  }
+  return str;
+};
+
+const inferValidURL = (maybeURL: string) => {
+  try {
+    return new URL(maybeURL).href;
+  } catch {
+    try {
+      return new URL(`https://${maybeURL}`).href;
+    } catch {
+      return 'about:blank';
+    }
+  }
+};
+
+const getBrowserDetails = async (browserType: string) => {
+  switch (browserType) {
+    case 'firefox':
+      return { browserType: firefox, channel: undefined, name: 'firefox' };
+    case 'webkit':
+      return { browserType: webkit, channel: undefined, name: 'webkit' };
+    default:
+      return { browserType: chromium, channel: 'chrome', name: 'chrome' };
+  }
+};
+
+const userAgentStrings = [
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.2227.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.3497.92 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
+];
+
+const applyStealthScripts = async (context: BrowserContext) => {
+  await context.addInitScript(() => {
+    // Override the navigator.webdriver property
+    Object.defineProperty(navigator, 'webdriver', {
+      get: () => undefined,
+    });
+
+    // Mock languages and plugins to mimic a real browser
+    Object.defineProperty(navigator, 'languages', {
+      get: () => ['en-US', 'en'],
+    });
+
+    Object.defineProperty(navigator, 'plugins', {
+      get: () => [1, 2, 3, 4, 5],
+    });
+
+    // Remove Playwright-specific properties
+    delete (window as any).__playwright;
+    delete (window as any).__pw_manual;
+    delete (window as any).__PW_inspect;
+
+    // Redefine the headless property
+    Object.defineProperty(navigator, 'headless', {
+      get: () => false,
+    });
+
+    // Override the permissions API
+    const originalQuery = window.navigator.permissions.query;
+    window.navigator.permissions.query = (parameters: any) =>
+      parameters.name === 'notifications'
+        ? Promise.resolve({
+            state: Notification.permission,
+          } as PermissionStatus)
+        : originalQuery(parameters);
+  });
+};
+
+const init = async () => {
+  intro(`${bgMagenta('[·]')} React Scan`);
+  const args = mri(process.argv.slice(2));
+  let browser: Browser | undefined;
+
+  const device = devices[args.device];
+  const { browserType, channel } = await getBrowserDetails(args.browser);
+
+  const contextOptions = {
+    headless: false,
+    channel,
+    ...device,
+    acceptDownloads: true,
+    viewport: null,
+    locale: 'en-US',
+    timezoneId: 'America/New_York',
+    args: [
+      '--enable-webgl',
+      '--use-gl=swiftshader',
+      '--enable-accelerated-2d-canvas',
+      '--disable-blink-features=AutomationControlled',
+      '--disable-web-security',
+    ],
+    userAgent:
+      userAgentStrings[Math.floor(Math.random() * userAgentStrings.length)],
+    bypassCSP: true,
+    ignoreHTTPSErrors: true,
+  };
+
+  try {
+    browser = await browserType.launch({
+      headless: false,
+      channel,
+    });
+  } catch {
+    /**/
+  }
+
+  if (!browser) {
+    try {
+      browser = await browserType.launch({ headless: false });
+    } catch {
+      await new Promise<void>(async (resolve, reject) => {
+        const shouldInstall = await confirm({
+          message:
+            'No drivers found. Install Playwright Chromium driver to continue?',
+        });
+        if (isCancel(shouldInstall)) {
+          cancel('Operation cancelled.');
+          process.exit(0);
+        }
+        if (!shouldInstall) return process.exit(0);
+
+        const installProcess = spawn(
+          'npx',
+          ['playwright@latest', 'install', 'chromium'],
+          { stdio: 'inherit' },
+        );
+
+        installProcess.on('close', (code) => {
+          if (!code) return resolve();
+          reject(new Error(`Installation process exited with code ${code}`));
+        });
+
+        installProcess.on('error', (err) => {
+          reject(err);
+        });
+      });
+
+      try {
+        browser = await chromium.launch({ headless: false });
+      } catch {
+        cancel(
+          'No browser could be launched. Please run `npx playwright install` to install browser drivers.',
+        );
+      }
+    }
+  }
+
+  if (!browser) {
+    cancel(
+      'No browser could be launched. Please run `npx playwright install` to install browser drivers.',
+    );
+    return;
+  }
+
+  const context = await browser.newContext(contextOptions);
+  await applyStealthScripts(context);
+
+  await context.addInitScript({
+    content: `(() => {
+      const NO_OP = () => {};
+      let i = 0;
+      globalThis.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+        checkDCE: NO_OP,
+        supportsFiber: true,
+        renderers: new Map(),
+        onScheduleFiberRoot: NO_OP,
+        onCommitFiberRoot: NO_OP,
+        onCommitFiberUnmount: NO_OP,
+        inject(renderer) {
+          const nextID = ++i;
+          this.renderers.set(nextID, renderer);
+          return nextID;
+        },
+      };
+    })();`,
+  });
+
+  const page = await context.newPage();
+
+  const scriptContent = fs.readFileSync(
+    path.resolve(__dirname, './auto.global.js'),
+    'utf8',
+  );
+
+  const inputUrl = args._[0] || 'about:blank';
+
+  const urlString = inferValidURL(inputUrl);
+
+  await page.goto(urlString);
+  await page.waitForLoadState('load');
+  await page.waitForTimeout(500);
+
+  await page.addScriptTag({
+    content: `${scriptContent}\n//# sourceURL=react-scan.js`,
+  });
+
+  const pollReport = async () => {
+    if (page.url() !== currentURL) return;
+    await page.evaluate(() => {
+      const globalHook = globalThis.__REACT_SCAN__;
+      if (!globalHook) return;
+      const reportData = globalHook.ReactScanInternals.reportData;
+      if (!Object.keys(reportData).length) return;
+      let count = 0;
+      for (const componentName in reportData) {
+        count += reportData[componentName].count;
+      }
+
+      console.log('REACT_SCAN_REPORT', count);
+    });
+  };
+
+  let count = 0;
+  let currentSpinner: ReturnType<typeof spinner> | undefined;
+  let currentURL = urlString;
+
+  let interval: NodeJS.Timer | undefined;
+
+  const inject = async (url: string) => {
+    if (interval) clearInterval(interval);
+    currentURL = url;
+    const truncatedURL = truncateString(url, 50);
+    currentSpinner?.stop(`${truncatedURL}${count ? ` (×${count})` : ''}`);
+    currentSpinner = spinner();
+    currentSpinner.start(dim(`Scanning: ${truncatedURL}`));
+    count = 0;
+
+    try {
+      await page.waitForLoadState('load');
+      await page.waitForTimeout(500);
+
+      const hasReactScan = await page.evaluate(() => {
+        return Boolean(globalThis.__REACT_SCAN__);
+      });
+
+      if (!hasReactScan) {
+        await page.addScriptTag({
+          content: scriptContent,
+        });
+      }
+
+      await page.waitForTimeout(100);
+
+      await page.evaluate(() => {
+        if (typeof globalThis.reactScan !== 'function') return;
+        globalThis.reactScan({ report: true });
+        globalThis.__REACT_SCAN__.ReactScanInternals.reportData = {};
+      });
+
+      interval = setInterval(() => {
+        pollReport().catch(() => {});
+      }, 1000);
+    } catch (e) {
+      currentSpinner?.stop(red(`Error: ${truncatedURL}`));
+    }
+  };
+
+  await inject(urlString);
+
+  page.on('framenavigated', async (frame) => {
+    if (frame !== page.mainFrame()) return;
+    const url = frame.url();
+    inject(url);
+  });
+
+  page.on('console', async (msg) => {
+    const text = msg.text();
+    if (!text.startsWith('REACT_SCAN_REPORT')) {
+      return;
+    }
+    const reportDataString = text.replace('REACT_SCAN_REPORT', '').trim();
+    try {
+      count = parseInt(reportDataString, 10);
+    } catch {
+      return;
+    }
+
+    const truncatedURL = truncateString(currentURL, 50);
+    if (currentSpinner) {
+      currentSpinner.message(
+        dim(`Scanning: ${truncatedURL}${count ? ` (×${count})` : ''}`),
+      );
+    }
+  });
+};
+
+void init();
+
+
+
+--- File: packages/scan/src/core/index.ts ---
+
+import type { Fiber, FiberRoot } from 'react-reconciler';
+import * as React from 'react';
+import { instrument, type Render } from './instrumentation/index';
+import {
+  type ActiveOutline,
+  flushOutlines,
+  getOutline,
+  type PendingOutline,
+} from './web/outline';
+import { logIntro } from './web/log';
+import { playGeigerClickSound } from './web/geiger';
+import { createPerfObserver } from './web/perf-observer';
+import { initReactScanOverlay } from './web/overlay';
+import {
+  createInspectElementStateMachine,
+  type States,
+} from './web/inspect-element/inspect-state-machine';
+import { createToolbar } from './web/toolbar';
+import { getType } from './instrumentation/utils';
+
+export interface Options {
+  /**
+   * Enable/disable scanning
+   *
+   * Please use the recommended way:
+   * enabled: process.env.NODE_ENV === 'development',
+   *
+   * @default true
+   */
+  enabled?: boolean;
+  /**
+   * Include children of a component applied with withScan
+   *
+   * @default true
+   */
+  includeChildren?: boolean;
+
+  /**
+   * Enable/disable geiger sound
+   *
+   * @default true
+   */
+  playSound?: boolean;
+
+  /**
+   * Log renders to the console
+   *
+   * @default false
+   */
+  log?: boolean;
+
+  /**
+   * Show toolbar bar
+   *
+   * @default true
+   */
+  showToolbar?: boolean;
+
+  /**
+   * Render count threshold, only show
+   * when a component renders more than this
+   *
+   * @default 0
+   */
+  renderCountThreshold?: number;
+
+  /**
+   * Clear aggregated fibers after this time in milliseconds
+   *
+   * @default 5000
+   */
+  resetCountTimeout?: number;
+
+  /**
+   * Maximum number of renders for red indicator
+   *
+   * @default 20
+   */
+  maxRenders?: number;
+
+  /**
+   * Report data to getReport()
+   *
+   * @default false
+   */
+  report?: boolean;
+
+  /**
+   * Always show labels
+   *
+   * @default false
+   */
+  alwaysShowLabels?: boolean;
+
+  /**
+   * Animation speed
+   *
+   * @default "fast"
+   */
+  animationSpeed?: 'slow' | 'fast' | 'off';
+
+  onCommitStart?: () => void;
+  onRender?: (fiber: Fiber, render: Render) => void;
+  onCommitFinish?: () => void;
+  onPaintStart?: (outlines: Array<PendingOutline>) => void;
+  onPaintFinish?: (outlines: Array<PendingOutline>) => void;
+}
+
+export interface Internals {
+  onCommitFiberRoot: (rendererID: number, root: FiberRoot) => void;
+  isInIframe: boolean;
+  isPaused: boolean;
+  componentAllowList: WeakMap<React.ComponentType<any>, Options> | null;
+  options: Options;
+  scheduledOutlines: Array<PendingOutline>;
+  activeOutlines: Array<ActiveOutline>;
+  onRender: ((fiber: Fiber, render: Render) => void) | null;
+  reportDataByFiber: WeakMap<
+    Fiber,
+    {
+      count: number;
+      time: number;
+      badRenders: Array<Render>;
+      displayName: string | null;
+    }
+  >;
+  reportData: Record<
+    string,
+    {
+      count: number;
+      time: number;
+      type: unknown;
+      badRenders: Array<Render>;
+    }
+  >;
+  fiberRoots: WeakSet<Fiber>;
+  inspectState: States;
+}
+
+type Listener<T> = (value: T) => void;
+
+export interface StoreMethods<T extends object> {
+  subscribe: <K extends keyof T>(
+    key: K,
+    listener: Listener<T[K]>,
+  ) => () => void;
+  set: <K extends keyof T>(key: K, value: T[K]) => void;
+  setState: (state: Partial<T>) => void;
+  emit: <K extends keyof T>(key: K, value: T[K]) => void;
+  subscribeMultiple: (
+    subscribeTo: Array<keyof T>,
+    listener: Listener<T>,
+  ) => () => void;
+}
+
+type Store<T extends object> = T & StoreMethods<T>;
+
+const createStore = <T extends object>(initialData: T): Store<T> => {
+  const data: T = { ...initialData };
+  const listeners: { [K in keyof T]?: Array<Listener<T[K]>> } = {};
+
+  const emit = <K extends keyof T>(key: K, value: T[K]): void => {
+    listeners[key]?.forEach((listener) => listener(value));
+  };
+
+  const set = <K extends keyof T>(key: K, value: T[K]): void => {
+    if (data[key] !== value) {
+      data[key] = value;
+      emit(key, value);
+    }
+  };
+
+  const subscribe = <K extends keyof T>(
+    key: K,
+    listener: Listener<T[K]>,
+  ): (() => void) => {
+    if (!listeners[key]) {
+      listeners[key] = [];
+    }
+    listeners[key]!.push(listener);
+    listener(data[key]);
+    return () => {
+      listeners[key] = listeners[key]!.filter((l) => l !== listener);
+    };
+  };
+
+  const setState = (state: Partial<T>) => {
+    for (const key in state) {
+      if (Object.prototype.hasOwnProperty.call(state, key)) {
+        set(key as keyof T, state[key] as T[keyof T]);
+      }
+    }
+  };
+
+  const subscribeMultiple = (
+    subscribeTo: Array<keyof T>,
+    listener: (store: typeof data) => void,
+  ) => {
+    subscribeTo.forEach((key) => {
+      if (!listeners[key]) {
+        listeners[key] = [];
+      }
+      listeners[key]?.push(() => listener(data));
+    });
+
+    return () => {
+      subscribeTo.forEach((key) => {
+        listeners[key] = listeners[key]?.filter((cb) => cb !== listener);
+      });
+    };
+  };
+
+  const proxy = new Proxy(data, {
+    get(target, prop, receiver) {
+      if (prop === 'subscribe') return subscribe;
+      if (prop === 'setState') return setState;
+      if (prop === 'emit') return emit;
+      if (prop === 'set') return set;
+      if (prop === 'subscribeMultiple') return subscribeMultiple;
+
+      return Reflect.get(target, prop, receiver);
+    },
+    set(target, prop, value) {
+      if (prop in target) {
+        set(prop as keyof T, value as T[keyof T]);
+        return true;
+      }
+      throw new Error(`Property "${String(prop)}" does not exist`);
+    },
+    deleteProperty(_, prop) {
+      throw new Error(`Cannot delete property "${String(prop)}" from store`);
+    },
+  });
+
+  return proxy as Store<T>;
+};
+
+const tryParse = (x: any) => {
+  try {
+    return JSON.parse(x);
+  } catch {
+    return 'false';
+  }
+};
+export const ReactScanInternals = createStore<Internals>({
+  onCommitFiberRoot: (_rendererID: number, _root: FiberRoot): void => {
+    /**/
+  },
+  isInIframe: typeof window !== 'undefined' && window.self !== window.top,
+  isPaused:
+    typeof window === 'undefined'
+      ? true
+      : tryParse(localStorage.getItem('react-scan-paused') ?? 'false'),
+  componentAllowList: null,
+  options: {
+    enabled: true,
+    includeChildren: true,
+    playSound: false,
+    log: false,
+    showToolbar: true,
+    renderCountThreshold: 0,
+    report: undefined,
+    alwaysShowLabels: false,
+    animationSpeed: 'fast',
+  },
+  onRender: null,
+  reportData: {},
+  reportDataByFiber: new WeakMap(),
+  scheduledOutlines: [],
+  activeOutlines: [],
+  fiberRoots: new WeakSet(),
+  inspectState: {
+    kind: 'uninitialized',
+  },
+});
+
+export const getReport = () => ReactScanInternals.reportData;
+
+export const setOptions = (options: Options) => {
+  ReactScanInternals.options = {
+    ...ReactScanInternals.options,
+    ...options,
+  };
+};
+
+export const getOptions = () => ReactScanInternals.options;
+
+export const start = () => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  if (document.querySelector('react-scan-overlay')) return;
+  initReactScanOverlay();
+
+  const overlayElement = document.createElement('react-scan-overlay') as any;
+  document.documentElement.appendChild(overlayElement);
+
+  if (ReactScanInternals.options.showToolbar) {
+    createToolbar();
+  }
+  const ctx = overlayElement.getContext();
+  createInspectElementStateMachine();
+
+  const audioContext =
+    typeof window !== 'undefined'
+      ? new (window.AudioContext ||
+          // @ts-expect-error -- This is a fallback for Safari
+          window.webkitAudioContext)()
+      : null;
+  createPerfObserver();
+
+  logIntro();
+
+  globalThis.__REACT_SCAN__ = {
+    ReactScanInternals,
+  };
+
+  instrument({
+    onCommitStart() {
+      ReactScanInternals.options.onCommitStart?.();
+    },
+    onRender(fiber, render) {
+      if (ReactScanInternals.isPaused) {
+        // don't draw if it's paused
+        return;
+      }
+      ReactScanInternals.options.onRender?.(fiber, render);
+      const outline = getOutline(fiber, render);
+      if (!outline) return;
+      ReactScanInternals.scheduledOutlines.push(outline);
+
+      if (ReactScanInternals.options.playSound && audioContext) {
+        const renderTimeThreshold = 10;
+        const amplitude = Math.min(
+          1,
+          (render.time - renderTimeThreshold) / (renderTimeThreshold * 2),
+        );
+        playGeigerClickSound(audioContext, amplitude);
+      }
+      flushOutlines(ctx, new Map());
+    },
+    onCommitFinish() {
+      ReactScanInternals.options.onCommitFinish?.();
+    },
+  });
+};
+
+export const withScan = <T>(
+  component: React.ComponentType<T>,
+  options: Options = {},
+) => {
+  setOptions(options);
+  const { isInIframe, componentAllowList } = ReactScanInternals;
+  if (isInIframe || options.enabled === false) return component;
+  if (!componentAllowList) {
+    ReactScanInternals.componentAllowList = new WeakMap<
+      React.ComponentType<any>,
+      Options
+    >();
+  }
+  if (componentAllowList) {
+    componentAllowList.set(component, { ...options });
+  }
+
+  start();
+
+  return component;
+};
+
+export const scan = (options: Options = {}) => {
+  setOptions(options);
+  const { isInIframe } = ReactScanInternals;
+  if (isInIframe || options.enabled === false) return;
+
+  start();
+};
+
+export const useScan = (options: Options) => {
+  React.useEffect(() => {
+    scan(options);
+  }, []);
+};
+
+export const onRender = (
+  type: unknown,
+  _onRender: (fiber: Fiber, render: Render) => void,
+) => {
+  const prevOnRender = ReactScanInternals.onRender;
+  ReactScanInternals.onRender = (fiber, render) => {
+    prevOnRender?.(fiber, render);
+    if (getType(fiber.type) === type) {
+      _onRender(fiber, render);
+    }
+  };
+};
+
+export const getRenderInfo = (type: unknown) => {
+  type = getType(type) || type;
+  const reportData = ReactScanInternals.reportData;
+  for (const componentName in reportData) {
+    if (reportData[componentName].type === type) {
+      return reportData[componentName];
+    }
+  }
+  return null;
+};
+
+
+
+--- File: packages/scan/src/core/instrumentation/fiber.ts ---
+
+// Note: do not import React in this file
+// since it will be executed before the react devtools hook is created
+
+import type * as React from 'react';
+import type { Fiber } from 'react-reconciler';
+
+export const PerformedWorkFlag = 0b01;
+export const ClassComponentTag = 1;
+export const FunctionComponentTag = 0;
+export const ContextConsumerTag = 9;
+export const ForwardRefTag = 11;
+export const MemoComponentTag = 14;
+export const SimpleMemoComponentTag = 15;
+export const HostComponentTag = 5;
+export const HostHoistableTag = 26;
+export const HostSingletonTag = 27;
+export const DehydratedSuspenseComponent = 18;
+export const HostText = 6;
+export const Fragment = 7;
+export const LegacyHiddenComponent = 23;
+export const OffscreenComponent = 22;
+export const HostRoot = 3;
+export const CONCURRENT_MODE_NUMBER = 0xeacf;
+export const CONCURRENT_MODE_SYMBOL_STRING = 'Symbol(react.concurrent_mode)';
+export const DEPRECATED_ASYNC_MODE_SYMBOL_STRING = 'Symbol(react.async_mode)';
+
+export const traverseContexts = (
+  fiber: Fiber,
+  selector: (
+    prevValue: { context: React.Context<unknown>; memoizedValue: unknown },
+    nextValue: { context: React.Context<unknown>; memoizedValue: unknown },
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+  ) => boolean | void,
+) => {
+  const nextDependencies = fiber.dependencies;
+  const prevDependencies = fiber.alternate?.dependencies;
+
+  if (!nextDependencies || !prevDependencies) return false;
+  if (
+    typeof nextDependencies !== 'object' ||
+    !('firstContext' in nextDependencies) ||
+    typeof prevDependencies !== 'object' ||
+    !('firstContext' in prevDependencies)
+  ) {
+
+
+--- Content truncated due to character limit ---
+--- File: packages/scan/src/core/utils.ts ---
+
+import type { Render } from './instrumentation/index';
+
+export const getLabelText = (renders: Array<Render>) => {
+  let labelText = '';
+
+  const components = new Map<
+    string,
+    {
+      count: number;
+      trigger: boolean;
+      forget: boolean;
+    }
+  >();
+
+  for (let i = 0, len = renders.length; i < len; i++) {
+    const render = renders[i];
+    const name = render.name;
+    if (!name?.trim()) continue;
+
+    const { count, trigger, forget } = components.get(name) ?? {
+      count: 0,
+      trigger: false,
+      forget: false,
+    };
+    components.set(name, {
+      count: count + render.count,
+      trigger: trigger || render.trigger,
+      forget: forget || render.forget,
+    });
+  }
+
+  const sortedComponents = Array.from(components.entries()).sort(
+    ([, a], [, b]) => b.count - a.count,
+  );
+
+  const parts: Array<string> = [];
+  for (const [name, { count, forget }] of sortedComponents) {
+    let text = name;
+    if (count > 1) {
+      text += ` ×${count}`;
+    }
+
+    if (forget) {
+      text = `${text} ✨`;
+    }
+    parts.push(text);
+  }
+
+  labelText = parts.join(' ');
+
+  if (!labelText.length) return null;
+  if (labelText.length > 20) {
+    labelText = `${labelText.slice(0, 20)}…`;
+  }
+  return labelText;
+};
+
+
+
+--- File: packages/scan/src/core/web/geiger.ts ---
+
+// MIT License
+
+// Copyright (c) 2024 Kristian Dupont
+
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or s
+
+--- Content truncated due to character limit ---
+--- File: packages/scan/src/index.ts ---
+
+import './core/instrumentation/init';
+
+export * from './core/index';
+
+
+
+--- File: packages/scan/src/rsc-shim.ts ---
+
+const NO_OP_SELF_RETURN = <T>(param: T): T => param;
+
+export const scan = NO_OP_SELF_RETURN;
+export const withScan = NO_OP_SELF_RETURN;
+export const useScan = NO_OP_SELF_RETURN;
+export const getReport = NO_OP_SELF_RETURN;
+
+
+
+--- File: pnpm-lock.yaml ---
+
+lockfil
+
+--- Content truncated due to character limit ---

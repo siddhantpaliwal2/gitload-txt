@@ -1,0 +1,6 @@
+.git/
+.gitignore
+.npmignore
+repos/
+tests/
+*.test.js 
