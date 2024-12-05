@@ -1,6 +1,6 @@
 # gitload-txt
 
-Generate enriched, AI-ready summaries of GitHub repositories as text files. Perfect for use with AI-powered IDEs like Cursor and other development tools.
+Download .txt summaries of GitHub Repos, use for context with Cursor and other AI IDEs.
 
 [![npm version](https://img.shields.io/npm/v/gitload-txt.svg)](https://www.npmjs.com/package/gitload-txt)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
